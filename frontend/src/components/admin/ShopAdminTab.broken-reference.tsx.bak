@@ -1,0 +1,1996 @@
+import { useState, useEffect, useRef } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import {
+  useListShopProducts,
+  getListShopOrdersQueryKey,
+  useCreateShopProduct,
+  useUpdateShopProduct,
+  useDeleteShopProduct,
+  useListShopOrders,
+  useUpdateShopOrder,
+  useDeleteShopOrder,
+  useUpdateShopOrderTracking,
+  useGetShopSettings,
+  updateShopSettings,
+} from "@workspace/api-client-react";
+import type { ShopProduct, ShopProductInput, ShopOrder, ShopOrderStatusUpdateStatus } from "@workspace/api-client-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { useToast } from "@/hooks/use-toast";
+import { format } from "date-fns";
+import {
+  Loader2, Plus, Edit, Trash2, Package, ShoppingCart,
+  Upload, X, Settings, Megaphone, Truck, MapPin, Star,
+  LayoutGrid, Tag, Globe, Image as ImageIcon, Layers,
+} from "lucide-react";
+
+type TshirtSize = { size: string; price: number; stock?: number | null; disabled?: boolean };
+type TshirtOption = { label: string; priceAdder: number; disabled?: boolean };
+type FrameSize = { label: string; price: number; stock?: number | null; disabled?: boolean };
+type FrameStyle = { label: string; color: string; priceAdder: number; disabled?: boolean };
+type BulkTier = { minQty: number; maxQty: number | null; label: string; priceAdder: number };
+type MugType = { label: string; price: number; stock?: number | null; disabled?: boolean; desc?: string };
+type MugCoating = { label: string; priceAdder: number; disabled?: boolean };
+type PfQuality = { label: string; priceAdder: number; disabled?: boolean };
+type PfThickness = { label: string; priceAdder: number; disabled?: boolean };
+type PfDelivery = { label: string; days: string; priceAdder: number; disabled?: boolean };
+type VariantData =
+  | { type: "none" }
+  | { type: "tshirt"; tshirt: { male: TshirtSize[]; female: TshirtSize[]; styles?: TshirtOption[]; materials?: TshirtOption[] }; bulkPricing?: BulkTier[] | null }
+  | { type: "photoframe"; photoframe: { sizes: FrameSize[]; frames: FrameStyle[]; quality?: PfQuality[]; thickness?: PfThickness[]; designingCharge?: number | null; maxFileSizeMB?: number | null; delivery?: PfDelivery[] }; bulkPricing?: BulkTier[] | null }
+  | { type: "mug"; mug: { types: MugType[]; coating?: MugCoating[] }; bulkPricing?: BulkTier[] | null };
+
+const DEFAULT_TSHIRT_STYLES: TshirtOption[] = [
+  { label: "Round Neck", priceAdder: 0 },
+  { label: "Polo / Collar", priceAdder: 80 },
+  { label: "V-Neck", priceAdder: 0 },
+  { label: "Full Sleeve", priceAdder: 100 },
+  { label: "Hoodie", priceAdder: 300 },
+  { label: "Sweatshirt", priceAdder: 200 },
+  { label: "Zip-Up Hoodie", priceAdder: 350 },
+  { label: "Sleeveless / Tank", priceAdder: 0 },
+];
+
+const DEFAULT_TSHIRT_MATERIALS: TshirtOption[] = [
+  { label: "180 GSM Cotton", priceAdder: 0 },
+  { label: "220 GSM Premium Cotton", priceAdder: 80 },
+  { label: "Cotton-Poly Blend", priceAdder: 0 },
+  { label: "Dri-Fit / Performance", priceAdder: 80 },
+  { label: "Fleece", priceAdder: 120 },
+  { label: "100% Polyester", priceAdder: 0 },
+];
+
+const DEFAULT_PF_QUALITY: PfQuality[] = [
+  { label: "Standard Print", priceAdder: 0 },
+  { label: "HD Print", priceAdder: 80 },
+  { label: "Premium HD Print", priceAdder: 150 },
+];
+
+const DEFAULT_PF_THICKNESS: PfThickness[] = [
+  { label: "0.5\" (Thin)", priceAdder: 0 },
+  { label: "1\" (Standard)", priceAdder: 50 },
+  { label: "1.5\" (Classic)", priceAdder: 80 },
+  { label: "2\" (Statement)", priceAdder: 120 },
+];
+
+const DEFAULT_PF_DELIVERY: PfDelivery[] = [
+  { label: "Economy", days: "7–10 business days", priceAdder: 0 },
+  { label: "Standard", days: "4–6 business days", priceAdder: 60 },
+  { label: "Express", days: "1–3 business days", priceAdder: 150 },
+];
+
+const DEFAULT_MUG_TYPES: MugType[] = [
+  { label: "11oz White Ceramic Mug", price: 299, desc: "Classic glossy white, best-seller" },
+  { label: "15oz Large Ceramic Mug", price: 399, desc: "Extra capacity, great for coffee lovers" },
+  { label: "Magic Color Changing Mug", price: 499, desc: "Reveals print when filled with hot liquid" },
+  { label: "11oz Inner Color Mug", price: 349, desc: "Colored inside with white printable outside" },
+  { label: "Two-Tone Mug", price: 379, desc: "Colored handle & rim, white body" },
+  { label: "15oz Enamel / Camping Mug", price: 449, desc: "Durable enamel, indoor & outdoor use" },
+  { label: "Travel Sipper / Tumbler", price: 549, desc: "Spill-proof lid, 12oz stainless steel" },
+  { label: "Frosted Glass Mug", price: 499, desc: "Semi-transparent frosted glass, 16oz" },
+];
+
+const DEFAULT_MUG_COATINGS: MugCoating[] = [
+  { label: "Glossy", priceAdder: 0 },
+  { label: "Matte", priceAdder: 50 },
+];
+
+const DEFAULT_CATEGORIES = ["Religious", "Kids", "Women", "Men", "Youth", "Senior Citizens", "Handcrafted", "Eco-friendly", "Health & Wellness", "Books", "Clothing", "Accessories", "Gifts", "Food & Nutrition", "Education"];
+
+const GRID_OPTIONS = [
+  { value: "1", label: "1 Column", desc: "Large cards, full width", preview: "cols1" },
+  { value: "2", label: "2 Columns", desc: "Two products per row", preview: "cols2" },
+  { value: "3", label: "3 Columns", desc: "Three per row", preview: "cols3" },
+  { value: "4", label: "4 Columns", desc: "Four per row (default)", preview: "cols4" },
+  { value: "5", label: "Compact", desc: "5 cols, small cards", preview: "cols5" },
+  { value: "list", label: "List", desc: "Horizontal cards", preview: "list" },
+  { value: "magazine", label: "Magazine", desc: "Hero + grid", preview: "magazine" },
+  { value: "masonry", label: "Masonry", desc: "Pinterest-style", preview: "masonry" },
+];
+
+function GridPreview({ type, active }: { type: string; active: boolean }) {
+  const cls = active ? "bg-primary" : "bg-slate-300";
+  if (type === "list") return (
+    <div className="flex flex-col gap-1 w-full">
+      {[1,2,3].map(i => <div key={i} className={`h-2.5 rounded-sm flex items-center gap-1 ${active ? "bg-primary/10" : "bg-slate-100"}`}><div className={`w-4 h-full rounded-sm ${cls}`} /><div className={`flex-1 h-1 rounded-sm ${active ? "bg-primary/40" : "bg-slate-200"}`} /></div>)}
+    </div>
+  );
+  if (type === "magazine") return (
+    <div className="w-full space-y-1">
+      <div className={`w-full h-5 rounded-sm ${cls} opacity-90`} />
+      <div className="flex gap-1">
+        {[1,2,3].map(i => <div key={i} className={`flex-1 h-3 rounded-sm ${cls} opacity-60`} />)}
+      </div>
+    </div>
+  );
+  if (type === "masonry") return (
+    <div className="flex gap-1 items-end w-full">
+      {[70, 90, 55, 80].map((h, i) => <div key={i} className={`flex-1 rounded-sm ${cls}`} style={{ height: `${h}%` }} />)}
+    </div>
+  );
+  const colCount = parseInt(type) || 4;
+  return (
+    <div className="flex gap-0.5 items-end w-full">
+      {Array.from({ length: Math.min(colCount, 5) }).map((_, i) => (
+        <div key={i} className={`flex-1 rounded-sm ${cls}`} style={{ height: `${65 + i * 7}%` }} />
+      ))}
+    </div>
+  );
+}
+
+const productSchema = z.object({
+  name: z.string().min(2, "Product name must be at least 2 characters"),
+  price: z.coerce.number().min(0),
+  mrp: z.coerce.number().min(0).optional().nullable(),
+  salePrice: z.coerce.number().min(0).optional().nullable(),
+  sku: z.string().optional(),
+  category: z.string().min(1, "Category is required"),
+  tag: z.string().optional(),
+  rating: z.coerce.number().min(0).max(5).optional(),
+  reviews: z.coerce.number().min(0).optional(),
+  desc: z.string().min(10, "Description must be at least 10 characters"),
+  impact: z.string().optional(),
+  image: z.string(),
+  stock: z.coerce.number().min(0).optional().nullable(),
+  weight: z.coerce.number().min(0).optional().nullable(),
+  length: z.coerce.number().min(0).optional().nullable(),
+  breadth: z.coerce.number().min(0).optional().nullable(),
+  height: z.coerce.number().min(0).optional().nullable(),
+  productType: z.string().default("physical"),
+  downloadUrl: z.string().optional().nullable(),
+  shortDesc: z.string().optional().nullable(),
+  featured: z.boolean().default(false),
+  published: z.boolean().default(true),
+  taxClass: z.string().optional().nullable(),
+  backorders: z.string().optional().nullable(),
+  soldIndividually: z.boolean().default(false),
+  seoTitle: z.string().optional().nullable(),
+  seoDesc: z.string().optional().nullable(),
+  seoKeywords: z.string().optional().nullable(),
+});
+
+type ProductFormValues = z.infer<typeof productSchema>;
+
+interface ShopAdminTabProps {
+  token: string;
+}
+
+export default function ShopAdminTab({ token }: ShopAdminTabProps) {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<ShopProduct | null>(null);
+  const [productTab, setProductTab] = useState("general");
+  const [galleryUrls, setGalleryUrls] = useState<string[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [isQrUploading, setIsQrUploading] = useState(false);
+  const [isGalleryUploading, setIsGalleryUploading] = useState<number | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<ShopOrder | null>(null);
+  const [orderToDelete, setOrderToDelete] = useState<ShopOrder | null>(null);
+  const [trackingForm, setTrackingForm] = useState({ trackingNumber: "", trackingUrl: "", carrier: "" });
+  const [isSavingTracking, setIsSavingTracking] = useState(false);
+  const [newCategory, setNewCategory] = useState("");
+  const [variantData, setVariantData] = useState<VariantData>({ type: "none" });
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const qrFileInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const { data: shopSettings } = useGetShopSettings();
+  const [isSavingSettings, setIsSavingSettings] = useState(false);
+
+  const [settingsForm, setSettingsForm] = useState({
+    shopName: "",
+    shopTitle: "",
+    shopSubtitle: "",
+    storeDomain: "",
+    announcementText: "",
+    announcementEnabled: false,
+    upiId: "",
+    upiQrUrl: "",
+    razorpayKeyId: "",
+    shippingEnabled: false,
+    warehousePincode: "",
+    freeShippingAbove: 0,
+    flatShippingRate: 0,
+    shiprocketEmail: "",
+    shiprocketToken: "",
+    gridLayout: "4",
+    shopCategories: DEFAULT_CATEGORIES as string[],
+    showMainSiteLink: true,
+  });
+
+  useEffect(() => {
+    if (shopSettings) {
+      const s = shopSettings as typeof shopSettings & {
+        shippingEnabled?: boolean; warehousePincode?: string;
+        freeShippingAbove?: number; flatShippingRate?: number;
+        shiprocketEmail?: string; shiprocketToken?: string;
+        gridLayout?: string; shopCategories?: string[];
+        showMainSiteLink?: boolean;
+      };
+      setSettingsForm({
+        shopName: s.shopName,
+        shopTitle: s.shopTitle,
+        shopSubtitle: s.shopSubtitle,
+        storeDomain: (s as { storeDomain?: string }).storeDomain ?? "",
+        announcementText: s.announcementText,
+        announcementEnabled: s.announcementEnabled,
+        upiId: s.upiId,
+        upiQrUrl: s.upiQrUrl,
+        razorpayKeyId: (s as { razorpayKeyId?: string }).razorpayKeyId ?? "",
+        shippingEnabled: s.shippingEnabled ?? false,
+        warehousePincode: s.warehousePincode ?? "",
+        freeShippingAbove: s.freeShippingAbove ?? 0,
+        flatShippingRate: s.flatShippingRate ?? 0,
+        shiprocketEmail: s.shiprocketEmail ?? "",
+        shiprocketToken: s.shiprocketToken ?? "",
+        gridLayout: s.gridLayout ?? "4",
+        shopCategories: s.shopCategories ?? DEFAULT_CATEGORIES,
+        showMainSiteLink: s.showMainSiteLink ?? true,
+      });
+    }
+  }, [shopSettings]);
+
+  const handleSaveSettings = async () => {
+    setIsSavingSettings(true);
+    try {
+      await updateShopSettings(settingsForm, { headers: { Authorization: `Bearer ${token}` } });
+      queryClient.invalidateQueries({ queryKey: ["/api/shop/settings"] });
+      toast({ title: "Settings saved" });
+    } catch {
+      toast({ title: "Failed to save settings", variant: "destructive" });
+    } finally {
+      setIsSavingSettings(false);
+    }
+  };
+
+  const handleQrUpload = async (file: File) => {
+    setIsQrUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/upload", { method: "POST", headers: { Authorization: `Bearer ${token}` }, body: formData });
+      if (!res.ok) throw new Error();
+      const data = await res.json() as { url: string };
+      setSettingsForm(f => ({ ...f, upiQrUrl: data.url }));
+      toast({ title: "QR code uploaded" });
+    } catch {
+      toast({ title: "Upload failed", variant: "destructive" });
+    } finally {
+      setIsQrUploading(false);
+    }
+  };
+
+  const handleImageUpload = async (file: File) => {
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/upload", { method: "POST", headers: { Authorization: `Bearer ${token}` }, body: formData });
+      if (!res.ok) throw new Error();
+      const data = await res.json() as { url: string };
+      form.setValue("image", data.url, { shouldValidate: true });
+      toast({ title: "Image uploaded" });
+    } catch {
+      toast({ title: "Image upload failed", variant: "destructive" });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleGalleryUpload = async (file: File, index: number) => {
+    setIsGalleryUploading(index);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/upload", { method: "POST", headers: { Authorization: `Bearer ${token}` }, body: formData });
+      if (!res.ok) throw new Error();
+      const data = await res.json() as { url: string };
+      const updated = [...galleryUrls];
+      updated[index] = data.url;
+      setGalleryUrls(updated);
+      toast({ title: "Gallery image uploaded" });
+    } catch {
+      toast({ title: "Upload failed", variant: "destructive" });
+    } finally {
+      setIsGalleryUploading(null);
+    }
+  };
+
+  const reqOptions = { request: { headers: { Authorization: `Bearer ${token}` } } };
+
+  const { data: products, isLoading: isLoadingProducts } = useListShopProducts(reqOptions);
+  const { data: orders, isLoading: isLoadingOrders } = useListShopOrders({
+    query: { queryKey: getListShopOrdersQueryKey(), retry: false },
+    request: { headers: { Authorization: `Bearer ${token}` } },
+  });
+
+  const createProduct = useCreateShopProduct(reqOptions);
+  const updateProduct = useUpdateShopProduct(reqOptions);
+  const deleteProduct = useDeleteShopProduct(reqOptions);
+  const updateOrder = useUpdateShopOrder(reqOptions);
+  const deleteOrder = useDeleteShopOrder(reqOptions);
+  const updateTracking = useUpdateShopOrderTracking(reqOptions);
+
+  const form = useForm<ProductFormValues>({
+    resolver: zodResolver(productSchema),
+    defaultValues: {
+      name: "", price: 0, category: "", tag: "", rating: 5, reviews: 0,
+      desc: "", impact: "", image: "", stock: null, productType: "physical",
+      featured: false, published: true, soldIndividually: false,
+    },
+  });
+
+  const productType = form.watch("productType");
+
+  const openAddDialog = () => {
+    setEditingProduct(null);
+    setProductTab("general");
+    setGalleryUrls([]);
+    setVariantData({ type: "none" });
+    form.reset({
+      name: "", price: 0, mrp: null, salePrice: null, sku: "", category: "",
+      tag: "", rating: 5, reviews: 0, desc: "", impact: "", image: "",
+      stock: null, weight: null, length: null, breadth: null, height: null,
+      productType: "physical", downloadUrl: null, shortDesc: null,
+      featured: false, published: true, taxClass: null, backorders: null,
+      soldIndividually: false, seoTitle: null, seoDesc: null, seoKeywords: null,
+    });
+    setIsDialogOpen(true);
+  };
+
+  const openEditDialog = (product: ShopProduct) => {
+    const p = product as ShopProduct & {
+      mrp?: number | null; salePrice?: number | null; sku?: string;
+      weight?: number | null; length?: number | null; breadth?: number | null; height?: number | null;
+      productType?: string; downloadUrl?: string | null; shortDesc?: string | null;
+      gallery?: string[] | null; featured?: boolean; published?: boolean;
+      taxClass?: string | null; backorders?: string | null; soldIndividually?: boolean;
+      seoTitle?: string | null; seoDesc?: string | null; seoKeywords?: string | null;
+      variantData?: VariantData | null;
+    };
+    setEditingProduct(product);
+    setProductTab("general");
+    setGalleryUrls(p.gallery ?? []);
+    setVariantData(p.variantData ?? { type: "none" });
+    form.reset({
+      name: p.name, price: p.price, mrp: p.mrp ?? null, salePrice: p.salePrice ?? null,
+      sku: p.sku ?? "", category: p.category, tag: p.tag || "", rating: p.rating,
+      reviews: p.reviews, desc: p.desc, impact: p.impact || "", image: p.image || "",
+      stock: p.stock, weight: p.weight ?? null, length: p.length ?? null,
+      breadth: p.breadth ?? null, height: p.height ?? null,
+      productType: p.productType ?? "physical", downloadUrl: p.downloadUrl ?? null,
+      shortDesc: p.shortDesc ?? null, featured: p.featured ?? false,
+      published: p.published !== false, taxClass: p.taxClass ?? null,
+      backorders: p.backorders ?? "no", soldIndividually: p.soldIndividually ?? false,
+      seoTitle: p.seoTitle ?? null, seoDesc: p.seoDesc ?? null, seoKeywords: p.seoKeywords ?? null,
+    });
+    setIsDialogOpen(true);
+  };
+
+  const onSubmit = async (values: ProductFormValues) => {
+    try {
+      const data: ShopProductInput = { ...values, tag: values.tag ?? "", rating: values.rating ?? 5, reviews: values.reviews ?? 0, impact: values.impact ?? "", gallery: galleryUrls.filter(Boolean), variantData: variantData.type === "none" ? null : variantData } as ShopProductInput;
+      if (editingProduct) {
+        await updateProduct.mutateAsync({ id: editingProduct.id, data });
+        toast({ title: "Product updated successfully" });
+      } else {
+        await createProduct.mutateAsync({ data });
+        toast({ title: "Product created successfully" });
+      }
+      queryClient.invalidateQueries({ queryKey: ["/api/shop/products"] });
+      setIsDialogOpen(false);
+    } catch {
+      toast({ title: "Error saving product", variant: "destructive" });
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Delete this product?")) return;
+    try {
+      await deleteProduct.mutateAsync({ id });
+      queryClient.invalidateQueries({ queryKey: ["/api/shop/products"] });
+      toast({ title: "Product deleted" });
+    } catch {
+      toast({ title: "Error deleting product", variant: "destructive" });
+    }
+  };
+
+  const availableCategories = settingsForm.shopCategories.length > 0 ? settingsForm.shopCategories : DEFAULT_CATEGORIES;
+
+  return (
+    <div className="max-w-5xl mx-auto">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h2 className="text-2xl font-serif font-bold">Neenas Shop</h2>
+          <p className="text-sm text-muted-foreground mt-1">Manage products, orders and shop settings — the storefront is at its own domain</p>
+        </div>
+      </div>
+
+      <Tabs defaultValue="products" className="space-y-6">
+        <div className="overflow-x-auto">
+          <TabsList className="bg-slate-100 p-1 rounded-lg inline-flex w-max">
+            <TabsTrigger value="products" className="rounded-md px-6 flex items-center gap-2 whitespace-nowrap">
+              <Package className="h-4 w-4" /> Products
+            </TabsTrigger>
+            <TabsTrigger value="orders" className="rounded-md px-6 flex items-center gap-2 whitespace-nowrap">
+              <ShoppingCart className="h-4 w-4" /> Orders
+            </TabsTrigger>
+            <TabsTrigger value="settings" className="rounded-md px-6 flex items-center gap-2 whitespace-nowrap">
+              <Settings className="h-4 w-4" /> Shop Settings
+            </TabsTrigger>
+          </TabsList>
+        </div>
+
+        {/* ── PRODUCTS ── */}
+        <TabsContent value="products">
+          <Card className="border-0 shadow-sm">
+            <CardHeader className="flex flex-row items-center justify-between border-b pb-4">
+              <CardTitle>Products Catalogue ({products?.length ?? 0})</CardTitle>
+              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button onClick={openAddDialog} className="flex items-center gap-2">
+                    <Plus className="h-4 w-4" /> Add Product
+                  </Button>
+                </DialogTrigger>
+
+                <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col p-0">
+                  <DialogHeader className="px-6 pt-6 pb-4 border-b">
+                    <DialogTitle>{editingProduct ? "Edit Product" : "Add New Product"}</DialogTitle>
+                  </DialogHeader>
+
+                  <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0">
+                      <Tabs value={productTab} onValueChange={setProductTab} className="flex flex-col flex-1 min-h-0">
+                        <div className="px-6 pt-3 border-b bg-slate-50">
+                          <TabsList className="bg-transparent h-auto p-0 gap-0 w-full justify-start">
+                            {[
+                              { id: "general", label: "General" },
+                              { id: "pricing", label: "Pricing" },
+                              { id: "inventory", label: "Inventory" },
+                              { id: productType === "digital" ? "digital" : "shipping", label: productType === "digital" ? "Digital" : "Shipping" },
+                              { id: "variants", label: "Variants" },
+                              { id: "seo", label: "SEO" },
+                              { id: "advanced", label: "Advanced" },
+                            ].map(t => (
+                              <TabsTrigger key={t.id} value={t.id} className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-2 text-sm">
+                                {t.label}
+                              </TabsTrigger>
+                            ))}
+                          </TabsList>
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto px-6 py-5">
+
+                          {/* GENERAL */}
+                          <TabsContent value="general" className="mt-0 space-y-4">
+                            <div className="grid grid-cols-2 gap-4">
+                              <FormField control={form.control} name="name" render={({ field }) => (
+                                <FormItem className="col-span-2">
+                                  <FormLabel>Product Name <span className="text-red-500">*</span></FormLabel>
+                                  <FormControl><Input placeholder="e.g. Handcrafted Brass Diya" {...field} /></FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )} />
+                              <FormField control={form.control} name="productType" render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Product Type</FormLabel>
+                                  <Select value={field.value} onValueChange={field.onChange}>
+                                    <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                                    <SelectContent>
+                                      <SelectItem value="physical">Physical Product</SelectItem>
+                                      <SelectItem value="digital">Digital Download</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </FormItem>
+                              )} />
+                              <FormField control={form.control} name="category" render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Category <span className="text-red-500">*</span></FormLabel>
+                                  <Select value={field.value} onValueChange={field.onChange}>
+                                    <FormControl><SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger></FormControl>
+                                    <SelectContent>
+                                      {availableCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                                    </SelectContent>
+                                  </Select>
+                                  <FormMessage />
+                                </FormItem>
+                              )} />
+                              <FormField control={form.control} name="shortDesc" render={({ field }) => (
+                                <FormItem className="col-span-2">
+                                  <FormLabel>Short Description</FormLabel>
+                                  <p className="text-xs text-slate-500">Shown on product cards. Keep under 120 chars.</p>
+                                  <FormControl><Input placeholder="Brief, punchy product description..." {...field} value={field.value ?? ""} /></FormControl>
+                                </FormItem>
+                              )} />
+                              <FormField control={form.control} name="desc" render={({ field }) => (
+                                <FormItem className="col-span-2">
+                                  <FormLabel>Full Description <span className="text-red-500">*</span></FormLabel>
+                                  <FormControl><Textarea rows={4} placeholder="Detailed product description..." {...field} /></FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )} />
+                              <FormField control={form.control} name="impact" render={({ field }) => (
+                                <FormItem className="col-span-2">
+                                  <FormLabel>Impact Statement</FormLabel>
+                                  <p className="text-xs text-slate-500">e.g. "Funds 3 meals for children"</p>
+                                  <FormControl><Input placeholder="e.g. Provides a week of education for one child" {...field} value={field.value ?? ""} /></FormControl>
+                                </FormItem>
+                              )} />
+                            </div>
+
+                            {/* Main Image */}
+                            <FormField control={form.control} name="image" render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Main Product Image</FormLabel>
+                                <div className="flex gap-2 items-start">
+                                  <FormControl><Input placeholder="https://... or upload →" {...field} /></FormControl>
+                                  <input type="file" accept="image/*" ref={fileInputRef} className="hidden"
+                                    onChange={e => { const f = e.target.files?.[0]; if (f) handleImageUpload(f); e.target.value = ""; }} />
+                                  <Button type="button" variant="outline" size="icon" disabled={isUploading} onClick={() => fileInputRef.current?.click()}>
+                                    {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                                  </Button>
+                                  {field.value && <Button type="button" variant="ghost" size="icon" onClick={() => form.setValue("image", "")}><X className="h-4 w-4" /></Button>}
+                                </div>
+                                {field.value && <img src={field.value} alt="Preview" className="mt-2 h-20 w-20 object-cover rounded border" />}
+                                <FormMessage />
+                              </FormItem>
+                            )} />
+
+                            {/* Gallery */}
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <p className="text-sm font-medium">Product Gallery</p>
+                                  <p className="text-xs text-slate-500">Additional product images</p>
+                                </div>
+                                <Button type="button" variant="outline" size="sm" onClick={() => setGalleryUrls(prev => [...prev, ""])}>
+                                  <Plus className="h-3 w-3 mr-1" /> Add Image
+                                </Button>
+                              </div>
+                              {galleryUrls.map((url, index) => (
+                                <div key={index} className="flex gap-2 items-start">
+                                  <div className="relative">
+                                    {url ? (
+                                      <img src={url} alt={`Gallery ${index + 1}`} className="h-12 w-12 object-cover rounded border" />
+                                    ) : (
+                                      <div className="h-12 w-12 bg-slate-100 rounded border flex items-center justify-center">
+                                        <ImageIcon className="h-4 w-4 text-slate-300" />
+                                      </div>
+                                    )}
+                                  </div>
+                                  <Input value={url} placeholder="https://... or upload →" onChange={e => { const updated = [...galleryUrls]; updated[index] = e.target.value; setGalleryUrls(updated); }} className="flex-1" />
+                                  <input type="file" accept="image/*" ref={el => { galleryInputRefs.current[index] = el; }} className="hidden"
+                                    onChange={e => { const f = e.target.files?.[0]; if (f) handleGalleryUpload(f, index); e.target.value = ""; }} />
+                                  <Button type="button" variant="outline" size="icon" disabled={isGalleryUploading === index} onClick={() => galleryInputRefs.current[index]?.click()}>
+                                    {isGalleryUploading === index ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                                  </Button>
+                                  <Button type="button" variant="ghost" size="icon" onClick={() => setGalleryUrls(prev => prev.filter((_, i) => i !== index))}>
+                                    <X className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              ))}
+                            </div>
+                          </TabsContent>
+
+                          {/* PRICING */}
+                          <TabsContent value="pricing" className="mt-0 space-y-4">
+                            <div className="grid grid-cols-2 gap-4">
+                              <FormField control={form.control} name="price" render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Base Price (₹) <span className="text-red-500">*</span></FormLabel>
+                                  <FormControl><Input type="number" min="0" step="0.01" {...field} /></FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )} />
+                              <FormField control={form.control} name="mrp" render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>MRP / Crossed-out Price (₹)</FormLabel>
+                                  <FormControl><Input type="number" min="0" step="0.01" placeholder="Leave blank if no MRP" {...field} value={field.value ?? ""} onChange={e => field.onChange(e.target.value === "" ? null : Number(e.target.value))} /></FormControl>
+                                </FormItem>
+                              )} />
+                              <FormField control={form.control} name="salePrice" render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Sale / Selling Price (₹)</FormLabel>
+                                  <p className="text-xs text-slate-500">Displayed price shown to customers</p>
+                                  <FormControl><Input type="number" min="0" step="0.01" placeholder="Leave blank to use base price" {...field} value={field.value ?? ""} onChange={e => field.onChange(e.target.value === "" ? null : Number(e.target.value))} /></FormControl>
+                                </FormItem>
+                              )} />
+                              <FormField control={form.control} name="taxClass" render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Tax Class</FormLabel>
+                                  <Select value={field.value ?? ""} onValueChange={field.onChange}>
+                                    <FormControl><SelectTrigger><SelectValue placeholder="Select tax class" /></SelectTrigger></FormControl>
+                                    <SelectContent>
+                                      <SelectItem value="none">No tax</SelectItem>
+                                      <SelectItem value="gst5">GST 5%</SelectItem>
+                                      <SelectItem value="gst12">GST 12%</SelectItem>
+                                      <SelectItem value="gst18">GST 18%</SelectItem>
+                                      <SelectItem value="gst28">GST 28%</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </FormItem>
+                              )} />
+                            </div>
+                            {(() => {
+                              const price = form.watch("price");
+                              const mrp = form.watch("mrp");
+                              const salePrice = form.watch("salePrice");
+                              const displayPrice = salePrice ?? price;
+                              const discount = mrp && mrp > displayPrice ? Math.round(((mrp - displayPrice) / mrp) * 100) : 0;
+                              return (
+                                <div className="bg-slate-50 rounded-lg p-4">
+                                  <p className="text-sm font-medium text-slate-700 mb-2">Live Preview</p>
+                                  <div className="flex items-center gap-3">
+                                    <span className="text-2xl font-bold text-primary">₹{displayPrice}</span>
+                                    {mrp && mrp > displayPrice && <span className="text-slate-400 line-through text-sm">₹{mrp}</span>}
+                                    {discount > 0 && <span className="bg-red-100 text-red-700 text-xs font-bold px-2 py-0.5 rounded">{discount}% OFF</span>}
+                                  </div>
+                                </div>
+                              );
+                            })()}
+                          </TabsContent>
+
+                          {/* INVENTORY */}
+                          <TabsContent value="inventory" className="mt-0 space-y-4">
+                            <div className="grid grid-cols-2 gap-4">
+                              <FormField control={form.control} name="sku" render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>SKU (Stock Keeping Unit)</FormLabel>
+                                  <FormControl><Input placeholder="e.g. BRS-DIYA-001" className="font-mono" {...field} value={field.value ?? ""} /></FormControl>
+                                </FormItem>
+                              )} />
+                              <FormField control={form.control} name="stock" render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Stock Quantity</FormLabel>
+                                  <p className="text-xs text-slate-500">Leave blank for unlimited stock</p>
+                                  <FormControl><Input type="number" min="0" placeholder="Unlimited" {...field} value={field.value ?? ""} onChange={e => field.onChange(e.target.value === "" ? null : Number(e.target.value))} /></FormControl>
+                                </FormItem>
+                              )} />
+                              <FormField control={form.control} name="backorders" render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Backorders</FormLabel>
+                                  <Select value={field.value ?? "no"} onValueChange={field.onChange}>
+                                    <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                                    <SelectContent>
+                                      <SelectItem value="no">Do not allow</SelectItem>
+                                      <SelectItem value="notify">Allow, notify customer</SelectItem>
+                                      <SelectItem value="yes">Allow</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </FormItem>
+                              )} />
+                              <FormField control={form.control} name="rating" render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Rating (0–5)</FormLabel>
+                                  <FormControl><Input type="number" min="0" max="5" step="0.1" {...field} /></FormControl>
+                                </FormItem>
+                              )} />
+                              <FormField control={form.control} name="reviews" render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Review Count</FormLabel>
+                                  <FormControl><Input type="number" min="0" {...field} /></FormControl>
+                                </FormItem>
+                              )} />
+                            </div>
+                            <FormField control={form.control} name="soldIndividually" render={({ field }) => (
+                              <FormItem>
+                                <div className="flex items-center gap-3">
+                                  <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                  <div>
+                                    <FormLabel>Sold individually</FormLabel>
+                                    <p className="text-xs text-slate-500">Limit purchases to 1 item per order</p>
+                                  </div>
+                                </div>
+                              </FormItem>
+                            )} />
+                          </TabsContent>
+
+                          {/* SHIPPING */}
+                          <TabsContent value="shipping" className="mt-0 space-y-4">
+                            <p className="text-sm text-slate-500">Physical dimensions used for shipping cost calculation.</p>
+                            <div className="grid grid-cols-2 gap-4">
+                              {(["weight", "length", "breadth", "height"] as const).map(dim => (
+                                <FormField key={dim} control={form.control} name={dim} render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>{dim.charAt(0).toUpperCase() + dim.slice(1)} {dim === "weight" ? "(kg)" : "(cm)"}</FormLabel>
+                                    <FormControl><Input type="number" min="0" step="0.01" placeholder="0.00" {...field} value={field.value ?? ""} onChange={e => field.onChange(e.target.value === "" ? null : Number(e.target.value))} /></FormControl>
+                                  </FormItem>
+                                )} />
+                              ))}
+                            </div>
+                          </TabsContent>
+
+                          {/* DIGITAL */}
+                          <TabsContent value="digital" className="mt-0 space-y-4">
+                            <p className="text-sm text-slate-500">For digital products, provide the download URL sent to customers after purchase.</p>
+                            <FormField control={form.control} name="downloadUrl" render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Download URL</FormLabel>
+                                <FormControl><Input placeholder="https://drive.google.com/..." {...field} value={field.value ?? ""} /></FormControl>
+                              </FormItem>
+                            )} />
+                          </TabsContent>
+
+                          {/* VARIANTS */}
+                          <TabsContent value="variants" className="mt-0 space-y-5">
+                            <div>
+                              <p className="text-sm font-medium mb-1">Variant Type</p>
+                              <p className="text-xs text-slate-500 mb-3">Enable size/style options for T-shirts, photo frames, or mugs.</p>
+                              <div className="flex flex-wrap gap-3">
+                                {[
+                                  { id: "none", label: "No Variants", icon: "—" },
+                                  { id: "tshirt", label: "T-Shirt", icon: "👔" },
+                                  { id: "photoframe", label: "Photo Frame", icon: "🖼️" },
+                                  { id: "mug", label: "Mug", icon: "☕" },
+                                ].map(opt => (
+                                  <button
+                                    key={opt.id}
+                                    type="button"
+                                    onClick={() => {
+                                      if (opt.id === "none") setVariantData({ type: "none" });
+                                      else if (opt.id === "tshirt") setVariantData({
+                                        type: "tshirt",
+                                        tshirt: {
+                                          male: [{ size: "S", price: 499 }, { size: "M", price: 499 }, { size: "L", price: 549 }, { size: "XL", price: 599 }, { size: "XXL", price: 649 }],
+                                          female: [{ size: "XS", price: 449 }, { size: "S", price: 449 }, { size: "M", price: 499 }, { size: "L", price: 549 }, { size: "XL", price: 599 }],
+                                        },
+                                      });
+                                      else if (opt.id === "photoframe") setVariantData({
+                                        type: "photoframe",
+                                        photoframe: {
+                                          sizes: [{ label: "4×6\"", price: 299 }, { label: "5×7\"", price: 399 }, { label: "8×10\"", price: 599 }],
+                                          frames: [{ label: "Black", color: "#1a1a1a", priceAdder: 0 }, { label: "Brown", color: "#6b3a2a", priceAdder: 50 }, { label: "Gold", color: "#c8a84b", priceAdder: 100 }],
+                                          quality: DEFAULT_PF_QUALITY,
+                                          thickness: DEFAULT_PF_THICKNESS,
+                                          delivery: DEFAULT_PF_DELIVERY,
+                                          designingCharge: null,
+                                          maxFileSizeMB: 10,
+                                        },
+                                      });
+                                      else setVariantData({
+                                        type: "mug",
+                                        mug: { types: DEFAULT_MUG_TYPES, coating: DEFAULT_MUG_COATINGS },
+                                      });
+                                    }}
+                                    className={`flex-1 min-w-[80px] flex flex-col items-center gap-1 py-3 rounded-lg border-2 text-sm transition-all ${variantData.type === opt.id ? "border-primary bg-primary/5 text-primary font-semibold" : "border-slate-200 text-slate-600 hover:border-primary/40"}`}
+                                  >
+                                    <span className="text-lg">{opt.icon}</span>
+                                    <span>{opt.label}</span>
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* T-SHIRT EDITOR */}
+                            {variantData.type === "tshirt" && (() => {
+                              const vd = variantData as Extract<VariantData, { type: "tshirt" }>;
+                              const td = vd.tshirt;
+                              const bulk = vd.bulkPricing ?? [];
+                              const updateSizes = (gender: "male" | "female", sizes: TshirtSize[]) => {
+                                setVariantData({ ...vd, tshirt: { ...td, [gender]: sizes } });
+                              };
+                              const updateBulk = (tiers: BulkTier[]) => setVariantData({ ...vd, bulkPricing: tiers });
+                              return (
+                                <div className="space-y-5">
+                                  {(["male", "female"] as const).map(gender => (
+                                    <div key={gender} className="bg-slate-50 rounded-lg p-4 border border-slate-200">
+                                      <div className="flex items-center justify-between mb-3">
+                                        <p className="font-semibold text-sm capitalize">{gender === "male" ? "👔 Male Sizes" : "👗 Female Sizes"}</p>
+                                        <Button type="button" size="sm" variant="outline" onClick={() => updateSizes(gender, [...td[gender], { size: "", price: 499, stock: null, disabled: false }])}>
+                                          <Plus className="h-3 w-3 mr-1" /> Add Size
+                                        </Button>
+                                      </div>
+                                      <div className="grid grid-cols-[auto_1fr_auto] gap-1 text-xs text-slate-500 font-medium px-1 mb-1">
+                                        <span className="w-24">Size</span>
+                                        <span className="grid grid-cols-[1fr_1fr_auto] gap-1"><span>Price ₹</span><span>Stock</span><span>Avail.</span></span>
+                                        <span />
+                                      </div>
+                                      <div className="space-y-2">
+                                        {td[gender].map((row, idx) => (
+                                          <div key={idx} className="flex gap-2 items-center">
+                                            <Input
+                                              placeholder="S, M, L…"
+                                              value={row.size}
+                                              className="w-24 shrink-0"
+                                              onChange={e => {
+                                                const updated = [...td[gender]];
+                                                updated[idx] = { ...row, size: e.target.value };
+                                                updateSizes(gender, updated);
+                                              }}
+                                            />
+                                            <Input
+                                              type="number" min="0" placeholder="Price"
+                                              value={row.price}
+                                              className="w-24 shrink-0"
+                                              onChange={e => {
+                                                const updated = [...td[gender]];
+                                                updated[idx] = { ...row, price: Number(e.target.value) };
+                                                updateSizes(gender, updated);
+                                              }}
+                                            />
+                                            <Input
+                                              type="number" min="0" placeholder="Stock"
+                                              value={row.stock ?? ""}
+                                              className="w-20 shrink-0"
+                                              onChange={e => {
+                                                const updated = [...td[gender]];
+                                                updated[idx] = { ...row, stock: e.target.value === "" ? null : Number(e.target.value) };
+                                                updateSizes(gender, updated);
+                                              }}
+                                            />
+                                            <label className="flex items-center gap-1 text-xs cursor-pointer shrink-0" title="Uncheck to mark Out of Stock">
+                                              <input type="checkbox" checked={!row.disabled}
+                                                onChange={e => {
+                                                  const updated = [...td[gender]];
+                                                  updated[idx] = { ...row, disabled: !e.target.checked };
+                                                  updateSizes(gender, updated);
+                                                }}
+                                              />
+                                              <span className={row.disabled ? "text-red-500" : "text-green-600"}>{row.disabled ? "OOS" : "✓"}</span>
+                                            </label>
+                                            <Button type="button" variant="ghost" size="icon" onClick={() => updateSizes(gender, td[gender].filter((_, i) => i !== idx))}>
+                                              <X className="h-4 w-4" />
+                                            </Button>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  ))}
+
+                                  {/* Bulk Pricing */}
+                                  <div className="bg-amber-50 rounded-lg p-4 border border-amber-200">
+                                    <div className="flex items-center justify-between mb-3">
+                                      <p className="font-semibold text-sm">🛒 Bulk Pricing Tiers <span className="font-normal text-slate-500">(optional)</span></p>
+                                      <Button type="button" size="sm" variant="outline" onClick={() => updateBulk([...bulk, { minQty: bulk.length > 0 ? (bulk[bulk.length - 1].minQty + 5) : 5, maxQty: null, label: "", priceAdder: 0 }])}>
+                                        <Plus className="h-3 w-3 mr-1" /> Add Tier
+                                      </Button>
+                                    </div>
+                                    {bulk.length === 0 ? (
+                                      <p className="text-xs text-slate-400">No bulk pricing. Add tiers to offer volume discounts.</p>
+                                    ) : (
+                                      <div className="space-y-2">
+                                        <div className="grid grid-cols-[1fr_1fr_1fr_1fr_auto] gap-2 text-xs font-medium text-slate-500 px-1">
+                                          <span>Min Qty</span><span>Max Qty</span><span>Label</span><span>Price Adder ₹</span><span />
+                                        </div>
+                                        {bulk.map((tier, idx) => (
+                                          <div key={idx} className="grid grid-cols-[1fr_1fr_1fr_1fr_auto] gap-2 items-center">
+                                            <Input type="number" min="1" placeholder="Min" value={tier.minQty}
+                                              onChange={e => { const u = [...bulk]; u[idx] = { ...tier, minQty: Number(e.target.value) }; updateBulk(u); }} />
+                                            <Input type="number" min="0" placeholder="Max (∞)" value={tier.maxQty ?? ""}
+                                              onChange={e => { const u = [...bulk]; u[idx] = { ...tier, maxQty: e.target.value === "" ? null : Number(e.target.value) }; updateBulk(u); }} />
+                                            <Input placeholder='e.g. "5–9"' value={tier.label}
+                                              onChange={e => { const u = [...bulk]; u[idx] = { ...tier, label: e.target.value }; updateBulk(u); }} />
+                                            <Input type="number" placeholder="-50" value={tier.priceAdder}
+                                              onChange={e => { const u = [...bulk]; u[idx] = { ...tier, priceAdder: Number(e.target.value) }; updateBulk(u); }} />
+                                            <Button type="button" variant="ghost" size="icon" onClick={() => updateBulk(bulk.filter((_, i) => i !== idx))}>
+                                              <X className="h-4 w-4" />
+                                            </Button>
+                                          </div>
+                                        ))}
+                                        <p className="text-xs text-slate-500 mt-1">Use negative priceAdder for discounts (e.g. -50 = ₹50 off per unit).</p>
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  {/* Garment Styles */}
+                                  <div className="bg-slate-50 rounded-lg p-4 border border-slate-200">
+                                    <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+                                      <p className="font-semibold text-sm">👕 Garment Styles <span className="font-normal text-slate-500">(optional)</span></p>
+                                      <div className="flex gap-2">
+                                        <Button type="button" size="sm" variant="outline" onClick={() => setVariantData({ ...vd, tshirt: { ...td, styles: DEFAULT_TSHIRT_STYLES } })}>
+                                          Load Defaults
+                                        </Button>
+                                        <Button type="button" size="sm" variant="outline" onClick={() => setVariantData({ ...vd, tshirt: { ...td, styles: [...(td.styles ?? []), { label: "", priceAdder: 0 }] } })}>
+                                          <Plus className="h-3 w-3 mr-1" /> Add
+                                        </Button>
+                                      </div>
+                                    </div>
+                                    {(td.styles ?? []).length === 0 ? (
+                                      <p className="text-xs text-slate-400">No styles configured. Click "Load Defaults" for Round Neck, Polo, Hoodie, Sweatshirt, etc.</p>
+                                    ) : (
+                                      <div className="space-y-2">
+                                        <div className="grid grid-cols-[1fr_80px_auto_auto] gap-2 text-xs font-medium text-slate-500 px-1 mb-1">
+                                          <span>Style Name</span><span>+₹ Adder</span><span>Avail.</span><span />
+                                        </div>
+                                        {(td.styles ?? []).map((row, idx) => (
+                                          <div key={idx} className="grid grid-cols-[1fr_80px_auto_auto] gap-2 items-center">
+                                            <Input placeholder="e.g. Round Neck" value={row.label}
+                                              onChange={e => { const u = [...(td.styles ?? [])]; u[idx] = { ...row, label: e.target.value }; setVariantData({ ...vd, tshirt: { ...td, styles: u } }); }} />
+                                            <Input type="number" placeholder="0" value={row.priceAdder}
+                                              onChange={e => { const u = [...(td.styles ?? [])]; u[idx] = { ...row, priceAdder: Number(e.target.value) }; setVariantData({ ...vd, tshirt: { ...td, styles: u } }); }} />
+                                            <label className="flex items-center gap-1 text-xs cursor-pointer shrink-0">
+                                              <input type="checkbox" checked={!row.disabled}
+                                                onChange={e => { const u = [...(td.styles ?? [])]; u[idx] = { ...row, disabled: !e.target.checked }; setVariantData({ ...vd, tshirt: { ...td, styles: u } }); }} />
+                                              <span className={row.disabled ? "text-red-500" : "text-green-600"}>{row.disabled ? "Off" : "✓"}</span>
+                                            </label>
+                                            <Button type="button" variant="ghost" size="icon" onClick={() => setVariantData({ ...vd, tshirt: { ...td, styles: (td.styles ?? []).filter((_, i) => i !== idx) } })}>
+                                              <X className="h-4 w-4" />
+                                            </Button>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  {/* Fabric Materials */}
+                                  <div className="bg-slate-50 rounded-lg p-4 border border-slate-200">
+                                    <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+                                      <p className="font-semibold text-sm">🧵 Fabric Materials <span className="font-normal text-slate-500">(optional)</span></p>
+                                      <div className="flex gap-2">
+                                        <Button type="button" size="sm" variant="outline" onClick={() => setVariantData({ ...vd, tshirt: { ...td, materials: DEFAULT_TSHIRT_MATERIALS } })}>
+                                          Load Defaults
+                                        </Button>
+                                        <Button type="button" size="sm" variant="outline" onClick={() => setVariantData({ ...vd, tshirt: { ...td, materials: [...(td.materials ?? []), { label: "", priceAdder: 0 }] } })}>
+                                          <Plus className="h-3 w-3 mr-1" /> Add
+                                        </Button>
+                                      </div>
+                                    </div>
+                                    {(td.materials ?? []).length === 0 ? (
+                                      <p className="text-xs text-slate-400">No materials configured. Click "Load Defaults" for 180 GSM Cotton, Dri-Fit, Fleece, etc.</p>
+                                    ) : (
+                                      <div className="space-y-2">
+                                        <div className="grid grid-cols-[1fr_80px_auto_auto] gap-2 text-xs font-medium text-slate-500 px-1 mb-1">
+                                          <span>Material Name</span><span>+₹ Adder</span><span>Avail.</span><span />
+                                        </div>
+                                        {(td.materials ?? []).map((row, idx) => (
+                                          <div key={idx} className="grid grid-cols-[1fr_80px_auto_auto] gap-2 items-center">
+                                            <Input placeholder="e.g. 180 GSM Cotton" value={row.label}
+                                              onChange={e => { const u = [...(td.materials ?? [])]; u[idx] = { ...row, label: e.target.value }; setVariantData({ ...vd, tshirt: { ...td, materials: u } }); }} />
+                                            <Input type="number" placeholder="0" value={row.priceAdder}
+                                              onChange={e => { const u = [...(td.materials ?? [])]; u[idx] = { ...row, priceAdder: Number(e.target.value) }; setVariantData({ ...vd, tshirt: { ...td, materials: u } }); }} />
+                                            <label className="flex items-center gap-1 text-xs cursor-pointer shrink-0">
+                                              <input type="checkbox" checked={!row.disabled}
+                                                onChange={e => { const u = [...(td.materials ?? [])]; u[idx] = { ...row, disabled: !e.target.checked }; setVariantData({ ...vd, tshirt: { ...td, materials: u } }); }} />
+                                              <span className={row.disabled ? "text-red-500" : "text-green-600"}>{row.disabled ? "Off" : "✓"}</span>
+                                            </label>
+                                            <Button type="button" variant="ghost" size="icon" onClick={() => setVariantData({ ...vd, tshirt: { ...td, materials: (td.materials ?? []).filter((_, i) => i !== idx) } })}>
+                                              <X className="h-4 w-4" />
+                                            </Button>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })()}
+
+                            {/* PHOTO FRAME EDITOR */}
+                            {variantData.type === "photoframe" && (() => {
+                              const vd = variantData as Extract<VariantData, { type: "photoframe" }>;
+                              const pf = vd.photoframe;
+                              const bulk = vd.bulkPricing ?? [];
+                              const updateBulk = (tiers: BulkTier[]) => setVariantData({ ...vd, bulkPricing: tiers });
+                              return (
+                                <div className="space-y-5">
+                                  {/* Sizes */}
+                                  <div className="bg-slate-50 rounded-lg p-4 border border-slate-200">
+                                    <div className="flex items-center justify-between mb-3">
+                                      <p className="font-semibold text-sm">📐 Frame Sizes</p>
+                                      <Button type="button" size="sm" variant="outline" onClick={() => setVariantData({ ...vd, photoframe: { ...pf, sizes: [...pf.sizes, { label: "", price: 0, stock: null, disabled: false }] } })}>
+                                        <Plus className="h-3 w-3 mr-1" /> Add Size
+                                      </Button>
+                                    </div>
+                                    <div className="grid grid-cols-[1fr_auto_1fr_1fr_auto_auto] gap-1 text-xs text-slate-500 font-medium px-1 mb-1">
+                                      <span>Label</span><span></span><span>Price ₹</span><span>Stock</span><span>Avail.</span><span />
+                                    </div>
+                                    <div className="space-y-2">
+                                      {pf.sizes.map((row, idx) => (
+                                        <div key={idx} className="flex gap-2 items-center">
+                                          <Input
+                                            placeholder='e.g. 4×6"'
+                                            value={row.label}
+                                            className="flex-1"
+                                            onChange={e => {
+                                              const updated = [...pf.sizes];
+                                              updated[idx] = { ...row, label: e.target.value };
+                                              setVariantData({ ...vd, photoframe: { ...pf, sizes: updated } });
+                                            }}
+                                          />
+                                          <span className="text-slate-400 text-sm">₹</span>
+                                          <Input
+                                            type="number" min="0" placeholder="Price" value={row.price}
+                                            className="w-24"
+                                            onChange={e => {
+                                              const updated = [...pf.sizes];
+                                              updated[idx] = { ...row, price: Number(e.target.value) };
+                                              setVariantData({ ...vd, photoframe: { ...pf, sizes: updated } });
+                                            }}
+                                          />
+                                          <Input
+                                            type="number" min="0" placeholder="Stock" value={row.stock ?? ""}
+                                            className="w-20"
+                                            onChange={e => {
+                                              const updated = [...pf.sizes];
+                                              updated[idx] = { ...row, stock: e.target.value === "" ? null : Number(e.target.value) };
+                                              setVariantData({ ...vd, photoframe: { ...pf, sizes: updated } });
+                                            }}
+                                          />
+                                          <label className="flex items-center gap-1 text-xs cursor-pointer shrink-0" title="Uncheck = Out of Stock">
+                                            <input type="checkbox" checked={!row.disabled}
+                                              onChange={e => {
+                                                const updated = [...pf.sizes];
+                                                updated[idx] = { ...row, disabled: !e.target.checked };
+                                                setVariantData({ ...vd, photoframe: { ...pf, sizes: updated } });
+                                              }}
+                                            />
+                                            <span className={row.disabled ? "text-red-500" : "text-green-600"}>{row.disabled ? "OOS" : "✓"}</span>
+                                          </label>
+                                          <Button type="button" variant="ghost" size="icon" onClick={() => setVariantData({ ...vd, photoframe: { ...pf, sizes: pf.sizes.filter((_, i) => i !== idx) } })}>
+                                            <X className="h-4 w-4" />
+                                          </Button>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+
+                                  {/* Frame Styles */}
+                                  <div className="bg-slate-50 rounded-lg p-4 border border-slate-200">
+                                    <div className="flex items-center justify-between mb-3">
+                                      <p className="font-semibold text-sm">🎨 Frame Styles</p>
+                                      <Button type="button" size="sm" variant="outline" onClick={() => setVariantData({ ...vd, photoframe: { ...pf, frames: [...pf.frames, { label: "", color: "#888888", priceAdder: 0, disabled: false }] } })}>
+                                        <Plus className="h-3 w-3 mr-1" /> Add Style
+                                      </Button>
+                                    </div>
+                                    <div className="space-y-2">
+                                      {pf.frames.map((row, idx) => (
+                                        <div key={idx} className="flex gap-2 items-center">
+                                          <input
+                                            type="color"
+                                            value={row.color}
+                                            title="Frame color"
+                                            className="w-9 h-9 rounded border border-slate-300 cursor-pointer p-0.5 shrink-0"
+                                            onChange={e => {
+                                              const updated = [...pf.frames];
+                                              updated[idx] = { ...row, color: e.target.value };
+                                              setVariantData({ ...vd, photoframe: { ...pf, frames: updated } });
+                                            }}
+                                          />
+                                          <Input
+                                            placeholder="Style name"
+                                            value={row.label}
+                                            className="flex-1"
+                                            onChange={e => {
+                                              const updated = [...pf.frames];
+                                              updated[idx] = { ...row, label: e.target.value };
+                                              setVariantData({ ...vd, photoframe: { ...pf, frames: updated } });
+                                            }}
+                                          />
+                                          <span className="text-slate-400 text-sm">+₹</span>
+                                          <Input
+                                            type="number" min="0" placeholder="0" value={row.priceAdder}
+                                            className="w-20"
+                                            onChange={e => {
+                                              const updated = [...pf.frames];
+                                              updated[idx] = { ...row, priceAdder: Number(e.target.value) };
+                                              setVariantData({ ...vd, photoframe: { ...pf, frames: updated } });
+                                            }}
+                                          />
+                                          <label className="flex items-center gap-1 text-xs cursor-pointer shrink-0" title="Uncheck = disabled style">
+                                            <input type="checkbox" checked={!row.disabled}
+                                              onChange={e => {
+                                                const updated = [...pf.frames];
+                                                updated[idx] = { ...row, disabled: !e.target.checked };
+                                                setVariantData({ ...vd, photoframe: { ...pf, frames: updated } });
+                                              }}
+                                            />
+                                            <span className={row.disabled ? "text-red-500" : "text-green-600"}>{row.disabled ? "Off" : "✓"}</span>
+                                          </label>
+                                          <Button type="button" variant="ghost" size="icon" onClick={() => setVariantData({ ...vd, photoframe: { ...pf, frames: pf.frames.filter((_, i) => i !== idx) } })}>
+                                            <X className="h-4 w-4" />
+                                          </Button>
+                                        </div>
+                                      ))}
+                                    </div>
+                                    <p className="text-xs text-slate-400 mt-2">Set price adder 0 for same-cost styles. Uncheck to hide from storefront.</p>
+                                  </div>
+
+                                  {/* Frame Thickness */}
+                                  <div className="bg-slate-50 rounded-lg p-4 border border-slate-200">
+                                    <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+                                      <p className="font-semibold text-sm">📏 Frame Thickness <span className="font-normal text-slate-500">(optional)</span></p>
+                                      <div className="flex gap-2">
+                                        <Button type="button" size="sm" variant="outline" onClick={() => setVariantData({ ...vd, photoframe: { ...pf, thickness: DEFAULT_PF_THICKNESS } })}>
+                                          Load Defaults
+                                        </Button>
+                                        <Button type="button" size="sm" variant="outline" onClick={() => setVariantData({ ...vd, photoframe: { ...pf, thickness: [...(pf.thickness ?? []), { label: "", priceAdder: 0 }] } })}>
+                                          <Plus className="h-3 w-3 mr-1" /> Add
+                                        </Button>
+                                      </div>
+                                    </div>
+                                    {(pf.thickness ?? []).length === 0 ? (
+                                      <p className="text-xs text-slate-400">No thickness options. Click "Load Defaults" for 0.5", 1", 1.5", 2" options.</p>
+                                    ) : (
+                                      <div className="space-y-2">
+                                        <div className="grid grid-cols-[1fr_80px_auto_auto] gap-2 text-xs font-medium text-slate-500 px-1 mb-1">
+                                          <span>Thickness</span><span>+₹ Adder</span><span>Avail.</span><span />
+                                        </div>
+                                        {(pf.thickness ?? []).map((row, idx) => (
+                                          <div key={idx} className="grid grid-cols-[1fr_80px_auto_auto] gap-2 items-center">
+                                            <Input placeholder='e.g. 1" (Standard)' value={row.label}
+                                              onChange={e => { const u = [...(pf.thickness ?? [])]; u[idx] = { ...row, label: e.target.value }; setVariantData({ ...vd, photoframe: { ...pf, thickness: u } }); }} />
+                                            <Input type="number" placeholder="0" value={row.priceAdder}
+                                              onChange={e => { const u = [...(pf.thickness ?? [])]; u[idx] = { ...row, priceAdder: Number(e.target.value) }; setVariantData({ ...vd, photoframe: { ...pf, thickness: u } }); }} />
+                                            <label className="flex items-center gap-1 text-xs cursor-pointer shrink-0">
+                                              <input type="checkbox" checked={!row.disabled}
+                                                onChange={e => { const u = [...(pf.thickness ?? [])]; u[idx] = { ...row, disabled: !e.target.checked }; setVariantData({ ...vd, photoframe: { ...pf, thickness: u } }); }} />
+                                              <span className={row.disabled ? "text-red-500" : "text-green-600"}>{row.disabled ? "Off" : "✓"}</span>
+                                            </label>
+                                            <Button type="button" variant="ghost" size="icon" onClick={() => setVariantData({ ...vd, photoframe: { ...pf, thickness: (pf.thickness ?? []).filter((_, i) => i !== idx) } })}>
+                                              <X className="h-4 w-4" />
+                                            </Button>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  {/* Print Quality */}
+                                  <div className="bg-slate-50 rounded-lg p-4 border border-slate-200">
+                                    <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+                                      <p className="font-semibold text-sm">🖨️ Print Quality Tiers <span className="font-normal text-slate-500">(optional)</span></p>
+                                      <div className="flex gap-2">
+                                        <Button type="button" size="sm" variant="outline" onClick={() => setVariantData({ ...vd, photoframe: { ...pf, quality: DEFAULT_PF_QUALITY } })}>
+                                          Load Defaults
+                                        </Button>
+                                        <Button type="button" size="sm" variant="outline" onClick={() => setVariantData({ ...vd, photoframe: { ...pf, quality: [...(pf.quality ?? []), { label: "", priceAdder: 0 }] } })}>
+                                          <Plus className="h-3 w-3 mr-1" /> Add
+                                        </Button>
+                                      </div>
+                                    </div>
+                                    {(pf.quality ?? []).length === 0 ? (
+                                      <p className="text-xs text-slate-400">No quality tiers. Click "Load Defaults" for Standard, HD, Premium HD.</p>
+                                    ) : (
+                                      <div className="space-y-2">
+                                        <div className="grid grid-cols-[1fr_80px_auto_auto] gap-2 text-xs font-medium text-slate-500 px-1 mb-1">
+                                          <span>Tier Name</span><span>+₹ Adder</span><span>Avail.</span><span />
+                                        </div>
+                                        {(pf.quality ?? []).map((row, idx) => (
+                                          <div key={idx} className="grid grid-cols-[1fr_80px_auto_auto] gap-2 items-center">
+                                            <Input placeholder="e.g. HD Print" value={row.label}
+                                              onChange={e => { const u = [...(pf.quality ?? [])]; u[idx] = { ...row, label: e.target.value }; setVariantData({ ...vd, photoframe: { ...pf, quality: u } }); }} />
+                                            <Input type="number" placeholder="0" value={row.priceAdder}
+                                              onChange={e => { const u = [...(pf.quality ?? [])]; u[idx] = { ...row, priceAdder: Number(e.target.value) }; setVariantData({ ...vd, photoframe: { ...pf, quality: u } }); }} />
+                                            <label className="flex items-center gap-1 text-xs cursor-pointer shrink-0">
+                                              <input type="checkbox" checked={!row.disabled}
+                                                onChange={e => { const u = [...(pf.quality ?? [])]; u[idx] = { ...row, disabled: !e.target.checked }; setVariantData({ ...vd, photoframe: { ...pf, quality: u } }); }} />
+                                              <span className={row.disabled ? "text-red-500" : "text-green-600"}>{row.disabled ? "Off" : "✓"}</span>
+                                            </label>
+                                            <Button type="button" variant="ghost" size="icon" onClick={() => setVariantData({ ...vd, photoframe: { ...pf, quality: (pf.quality ?? []).filter((_, i) => i !== idx) } })}>
+                                              <X className="h-4 w-4" />
+                                            </Button>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  {/* Delivery Options */}
+                                  <div className="bg-slate-50 rounded-lg p-4 border border-slate-200">
+                                    <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+                                      <p className="font-semibold text-sm">🚚 Delivery Options <span className="font-normal text-slate-500">(optional)</span></p>
+                                      <div className="flex gap-2">
+                                        <Button type="button" size="sm" variant="outline" onClick={() => setVariantData({ ...vd, photoframe: { ...pf, delivery: DEFAULT_PF_DELIVERY } })}>
+                                          Load Defaults
+                                        </Button>
+                                        <Button type="button" size="sm" variant="outline" onClick={() => setVariantData({ ...vd, photoframe: { ...pf, delivery: [...(pf.delivery ?? []), { label: "", days: "", priceAdder: 0 }] } })}>
+                                          <Plus className="h-3 w-3 mr-1" /> Add
+                                        </Button>
+                                      </div>
+                                    </div>
+                                    {(pf.delivery ?? []).length === 0 ? (
+                                      <p className="text-xs text-slate-400">No delivery options. Click "Load Defaults" for Economy, Standard, Express.</p>
+                                    ) : (
+                                      <div className="space-y-2">
+                                        <div className="grid grid-cols-[1fr_1fr_80px_auto_auto] gap-2 text-xs font-medium text-slate-500 px-1 mb-1">
+                                          <span>Option</span><span>Days</span><span>+₹</span><span>Avail.</span><span />
+                                        </div>
+                                        {(pf.delivery ?? []).map((row, idx) => (
+                                          <div key={idx} className="grid grid-cols-[1fr_1fr_80px_auto_auto] gap-2 items-center">
+                                            <Input placeholder="e.g. Express" value={row.label}
+                                              onChange={e => { const u = [...(pf.delivery ?? [])]; u[idx] = { ...row, label: e.target.value }; setVariantData({ ...vd, photoframe: { ...pf, delivery: u } }); }} />
+                                            <Input placeholder="e.g. 1–3 days" value={row.days}
+                                              onChange={e => { const u = [...(pf.delivery ?? [])]; u[idx] = { ...row, days: e.target.value }; setVariantData({ ...vd, photoframe: { ...pf, delivery: u } }); }} />
+                                            <Input type="number" placeholder="0" value={row.priceAdder}
+                                              onChange={e => { const u = [...(pf.delivery ?? [])]; u[idx] = { ...row, priceAdder: Number(e.target.value) }; setVariantData({ ...vd, photoframe: { ...pf, delivery: u } }); }} />
+                                            <label className="flex items-center gap-1 text-xs cursor-pointer shrink-0">
+                                              <input type="checkbox" checked={!row.disabled}
+                                                onChange={e => { const u = [...(pf.delivery ?? [])]; u[idx] = { ...row, disabled: !e.target.checked }; setVariantData({ ...vd, photoframe: { ...pf, delivery: u } }); }} />
+                                              <span className={row.disabled ? "text-red-500" : "text-green-600"}>{row.disabled ? "Off" : "✓"}</span>
+                                            </label>
+                                            <Button type="button" variant="ghost" size="icon" onClick={() => setVariantData({ ...vd, photoframe: { ...pf, delivery: (pf.delivery ?? []).filter((_, i) => i !== idx) } })}>
+                                              <X className="h-4 w-4" />
+                                            </Button>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  {/* Designing Charge + Upload Limit */}
+                                  <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                                    <p className="font-semibold text-sm mb-3">🎨 Design Service & Upload Settings</p>
+                                    <div className="grid grid-cols-2 gap-4">
+                                      <div>
+                                        <label className="text-xs font-medium text-slate-600 block mb-1">Designing Charge (₹)</label>
+                                        <Input type="number" min="0" placeholder="e.g. 99 (leave blank = free)"
+                                          value={pf.designingCharge ?? ""}
+                                          onChange={e => setVariantData({ ...vd, photoframe: { ...pf, designingCharge: e.target.value === "" ? null : Number(e.target.value) } })} />
+                                        <p className="text-xs text-slate-400 mt-1">Optional add-on: customer chooses whether to pay for professional design help.</p>
+                                      </div>
+                                      <div>
+                                        <label className="text-xs font-medium text-slate-600 block mb-1">Max Upload Size (MB)</label>
+                                        <Input type="number" min="1" max="50" placeholder="e.g. 10"
+                                          value={pf.maxFileSizeMB ?? ""}
+                                          onChange={e => setVariantData({ ...vd, photoframe: { ...pf, maxFileSizeMB: e.target.value === "" ? null : Number(e.target.value) } })} />
+                                        <p className="text-xs text-slate-400 mt-1">Shown to customers on the product page. Recommended: 10 MB for HD photos.</p>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {/* Bulk Pricing */}
+                                  <div className="bg-amber-50 rounded-lg p-4 border border-amber-200">
+                                    <div className="flex items-center justify-between mb-3">
+                                      <p className="font-semibold text-sm">🛒 Bulk Pricing Tiers <span className="font-normal text-slate-500">(optional)</span></p>
+                                      <Button type="button" size="sm" variant="outline" onClick={() => updateBulk([...bulk, { minQty: bulk.length > 0 ? (bulk[bulk.length - 1].minQty + 5) : 5, maxQty: null, label: "", priceAdder: 0 }])}>
+                                        <Plus className="h-3 w-3 mr-1" /> Add Tier
+                                      </Button>
+                                    </div>
+                                    {bulk.length === 0 ? (
+                                      <p className="text-xs text-slate-400">No bulk pricing. Add tiers to offer volume discounts.</p>
+                                    ) : (
+                                      <div className="space-y-2">
+                                        <div className="grid grid-cols-[1fr_1fr_1fr_1fr_auto] gap-2 text-xs font-medium text-slate-500 px-1">
+                                          <span>Min Qty</span><span>Max Qty</span><span>Label</span><span>Price Adder ₹</span><span />
+                                        </div>
+                                        {bulk.map((tier, idx) => (
+                                          <div key={idx} className="grid grid-cols-[1fr_1fr_1fr_1fr_auto] gap-2 items-center">
+                                            <Input type="number" min="1" placeholder="Min" value={tier.minQty}
+                                              onChange={e => { const u = [...bulk]; u[idx] = { ...tier, minQty: Number(e.target.value) }; updateBulk(u); }} />
+                                            <Input type="number" min="0" placeholder="Max (∞)" value={tier.maxQty ?? ""}
+                                              onChange={e => { const u = [...bulk]; u[idx] = { ...tier, maxQty: e.target.value === "" ? null : Number(e.target.value) }; updateBulk(u); }} />
+                                            <Input placeholder='e.g. "5–9"' value={tier.label}
+                                              onChange={e => { const u = [...bulk]; u[idx] = { ...tier, label: e.target.value }; updateBulk(u); }} />
+                                            <Input type="number" placeholder="-50" value={tier.priceAdder}
+                                              onChange={e => { const u = [...bulk]; u[idx] = { ...tier, priceAdder: Number(e.target.value) }; updateBulk(u); }} />
+                                            <Button type="button" variant="ghost" size="icon" onClick={() => updateBulk(bulk.filter((_, i) => i !== idx))}>
+                                              <X className="h-4 w-4" />
+                                            </Button>
+                                          </div>
+                                        ))}
+                                        <p className="text-xs text-slate-500 mt-1">Negative priceAdder = discount (e.g. -50 = ₹50 off per unit).</p>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })()}
+
+                            {/* MUG EDITOR */}
+                            {variantData.type === "mug" && (() => {
+                              const vd = variantData as Extract<VariantData, { type: "mug" }>;
+                              const mg = vd.mug;
+                              const bulk = vd.bulkPricing ?? [];
+                              const updateBulk = (tiers: BulkTier[]) => setVariantData({ ...vd, bulkPricing: tiers });
+                              return (
+                                <div className="space-y-5">
+                                  {/* Mug Types */}
+                                  <div className="bg-slate-50 rounded-lg p-4 border border-slate-200">
+                                    <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+                                      <p className="font-semibold text-sm">☕ Mug Types</p>
+                                      <div className="flex gap-2">
+                                        <Button type="button" size="sm" variant="outline" onClick={() => setVariantData({ ...vd, mug: { ...mg, types: DEFAULT_MUG_TYPES } })}>
+                                          Load Defaults
+                                        </Button>
+                                        <Button type="button" size="sm" variant="outline" onClick={() => setVariantData({ ...vd, mug: { ...mg, types: [...mg.types, { label: "", price: 299 }] } })}>
+                                          <Plus className="h-3 w-3 mr-1" /> Add
+                                        </Button>
+                                      </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                      <div className="grid grid-cols-[1fr_1fr_80px_80px_auto_auto] gap-2 text-xs font-medium text-slate-500 px-1 mb-1">
+                                        <span>Mug Name</span><span>Description</span><span>Price ₹</span><span>Stock</span><span>Avail.</span><span />
+                                      </div>
+                                      {mg.types.map((row, idx) => (
+                                        <div key={idx} className="grid grid-cols-[1fr_1fr_80px_80px_auto_auto] gap-2 items-center">
+                                          <Input placeholder="e.g. 11oz Ceramic" value={row.label}
+                                            onChange={e => { const u = [...mg.types]; u[idx] = { ...row, label: e.target.value }; setVariantData({ ...vd, mug: { ...mg, types: u } }); }} />
+                                          <Input placeholder="Brief description" value={row.desc ?? ""}
+                                            onChange={e => { const u = [...mg.types]; u[idx] = { ...row, desc: e.target.value }; setVariantData({ ...vd, mug: { ...mg, types: u } }); }} />
+                                          <Input type="number" min="0" placeholder="Price" value={row.price}
+                                            onChange={e => { const u = [...mg.types]; u[idx] = { ...row, price: Number(e.target.value) }; setVariantData({ ...vd, mug: { ...mg, types: u } }); }} />
+                                          <Input type="number" min="0" placeholder="∞" value={row.stock ?? ""}
+                                            onChange={e => { const u = [...mg.types]; u[idx] = { ...row, stock: e.target.value === "" ? null : Number(e.target.value) }; setVariantData({ ...vd, mug: { ...mg, types: u } }); }} />
+                                          <label className="flex items-center gap-1 text-xs cursor-pointer shrink-0">
+                                            <input type="checkbox" checked={!row.disabled}
+                                              onChange={e => { const u = [...mg.types]; u[idx] = { ...row, disabled: !e.target.checked }; setVariantData({ ...vd, mug: { ...mg, types: u } }); }} />
+                                            <span className={row.disabled ? "text-red-500" : "text-green-600"}>{row.disabled ? "OOS" : "✓"}</span>
+                                          </label>
+                                          <Button type="button" variant="ghost" size="icon" onClick={() => setVariantData({ ...vd, mug: { ...mg, types: mg.types.filter((_, i) => i !== idx) } })}>
+                                            <X className="h-4 w-4" />
+                                          </Button>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+
+                                  {/* Coating / Finish */}
+                                  <div className="bg-slate-50 rounded-lg p-4 border border-slate-200">
+                                    <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+                                      <p className="font-semibold text-sm">✨ Coating / Finish <span className="font-normal text-slate-500">(optional)</span></p>
+                                      <div className="flex gap-2">
+                                        <Button type="button" size="sm" variant="outline" onClick={() => setVariantData({ ...vd, mug: { ...mg, coating: DEFAULT_MUG_COATINGS } })}>
+                                          Load Defaults
+                                        </Button>
+                                        <Button type="button" size="sm" variant="outline" onClick={() => setVariantData({ ...vd, mug: { ...mg, coating: [...(mg.coating ?? []), { label: "", priceAdder: 0 }] } })}>
+                                          <Plus className="h-3 w-3 mr-1" /> Add
+                                        </Button>
+                                      </div>
+                                    </div>
+                                    {(mg.coating ?? []).length === 0 ? (
+                                      <p className="text-xs text-slate-400">No coating options. Click "Load Defaults" for Glossy and Matte.</p>
+                                    ) : (
+                                      <div className="space-y-2">
+                                        <div className="grid grid-cols-[1fr_80px_auto_auto] gap-2 text-xs font-medium text-slate-500 px-1 mb-1">
+                                          <span>Finish Name</span><span>+₹ Adder</span><span>Avail.</span><span />
+                                        </div>
+                                        {(mg.coating ?? []).map((row, idx) => (
+                                          <div key={idx} className="grid grid-cols-[1fr_80px_auto_auto] gap-2 items-center">
+                                            <Input placeholder="e.g. Glossy" value={row.label}
+                                              onChange={e => { const u = [...(mg.coating ?? [])]; u[idx] = { ...row, label: e.target.value }; setVariantData({ ...vd, mug: { ...mg, coating: u } }); }} />
+                                            <Input type="number" placeholder="0" value={row.priceAdder}
+                                              onChange={e => { const u = [...(mg.coating ?? [])]; u[idx] = { ...row, priceAdder: Number(e.target.value) }; setVariantData({ ...vd, mug: { ...mg, coating: u } }); }} />
+                                            <label className="flex items-center gap-1 text-xs cursor-pointer shrink-0">
+                                              <input type="checkbox" checked={!row.disabled}
+                                                onChange={e => { const u = [...(mg.coating ?? [])]; u[idx] = { ...row, disabled: !e.target.checked }; setVariantData({ ...vd, mug: { ...mg, coating: u } }); }} />
+                                              <span className={row.disabled ? "text-red-500" : "text-green-600"}>{row.disabled ? "Off" : "✓"}</span>
+                                            </label>
+                                            <Button type="button" variant="ghost" size="icon" onClick={() => setVariantData({ ...vd, mug: { ...mg, coating: (mg.coating ?? []).filter((_, i) => i !== idx) } })}>
+                                              <X className="h-4 w-4" />
+                                            </Button>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  {/* Bulk Pricing */}
+                                  <div className="bg-amber-50 rounded-lg p-4 border border-amber-200">
+                                    <div className="flex items-center justify-between mb-3">
+                                      <p className="font-semibold text-sm">🛒 Bulk Pricing Tiers <span className="font-normal text-slate-500">(optional)</span></p>
+                                      <Button type="button" size="sm" variant="outline" onClick={() => updateBulk([...bulk, { minQty: bulk.length > 0 ? (bulk[bulk.length - 1].minQty + 5) : 5, maxQty: null, label: "", priceAdder: 0 }])}>
+                                        <Plus className="h-3 w-3 mr-1" /> Add Tier
+                                      </Button>
+                                    </div>
+                                    {bulk.length === 0 ? (
+                                      <p className="text-xs text-slate-400">No bulk pricing. Add tiers to offer volume discounts.</p>
+                                    ) : (
+                                      <div className="space-y-2">
+                                        <div className="grid grid-cols-[1fr_1fr_1fr_1fr_auto] gap-2 text-xs font-medium text-slate-500 px-1">
+                                          <span>Min Qty</span><span>Max Qty</span><span>Label</span><span>Price Adder ₹</span><span />
+                                        </div>
+                                        {bulk.map((tier, idx) => (
+                                          <div key={idx} className="grid grid-cols-[1fr_1fr_1fr_1fr_auto] gap-2 items-center">
+                                            <Input type="number" min="1" placeholder="Min" value={tier.minQty}
+                                              onChange={e => { const u = [...bulk]; u[idx] = { ...tier, minQty: Number(e.target.value) }; updateBulk(u); }} />
+                                            <Input type="number" min="0" placeholder="Max (∞)" value={tier.maxQty ?? ""}
+                                              onChange={e => { const u = [...bulk]; u[idx] = { ...tier, maxQty: e.target.value === "" ? null : Number(e.target.value) }; updateBulk(u); }} />
+                                            <Input placeholder='e.g. "5–9"' value={tier.label}
+                                              onChange={e => { const u = [...bulk]; u[idx] = { ...tier, label: e.target.value }; updateBulk(u); }} />
+                                            <Input type="number" placeholder="-50" value={tier.priceAdder}
+                                              onChange={e => { const u = [...bulk]; u[idx] = { ...tier, priceAdder: Number(e.target.value) }; updateBulk(u); }} />
+                                            <Button type="button" variant="ghost" size="icon" onClick={() => updateBulk(bulk.filter((_, i) => i !== idx))}>
+                                              <X className="h-4 w-4" />
+                                            </Button>
+                                          </div>
+                                        ))}
+                                        <p className="text-xs text-slate-500 mt-1">Negative priceAdder = discount (e.g. -50 = ₹50 off per unit).</p>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })()}
+                          </TabsContent>
+
+                          {/* SEO */}
+                          <TabsContent value="seo" className="mt-0 space-y-4">
+                            <FormField control={form.control} name="seoTitle" render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>SEO Title</FormLabel>
+                                <p className="text-xs text-slate-500">Overrides the product name in search results. Keep under 60 chars.</p>
+                                <FormControl><Input placeholder="e.g. Buy Handcrafted Brass Diya Online | Neenas" {...field} value={field.value ?? ""} /></FormControl>
+                                <p className="text-xs text-slate-400">{(field.value ?? "").length}/60</p>
+                              </FormItem>
+                            )} />
+                            <FormField control={form.control} name="seoDesc" render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Meta Description</FormLabel>
+                                <p className="text-xs text-slate-500">Shown in search previews. Keep under 160 chars.</p>
+                                <FormControl><Textarea rows={3} placeholder="A beautiful hand-poured brass diya..." {...field} value={field.value ?? ""} /></FormControl>
+                                <p className="text-xs text-slate-400">{(field.value ?? "").length}/160</p>
+                              </FormItem>
+                            )} />
+                            <FormField control={form.control} name="seoKeywords" render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Keywords</FormLabel>
+                                <p className="text-xs text-slate-500">Comma-separated keywords for this product.</p>
+                                <FormControl><Input placeholder="brass diya, handcrafted diya, pooja items" {...field} value={field.value ?? ""} /></FormControl>
+                              </FormItem>
+                            )} />
+                          </TabsContent>
+
+                          {/* ADVANCED */}
+                          <TabsContent value="advanced" className="mt-0 space-y-5">
+                            <FormField control={form.control} name="published" render={({ field }) => (
+                              <FormItem>
+                                <div className="flex items-center gap-3 p-4 bg-slate-50 rounded-lg">
+                                  <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                  <div>
+                                    <FormLabel>{field.value ? "Published" : "Draft"}</FormLabel>
+                                    <p className="text-xs text-slate-500">{field.value ? "Visible in the shop" : "Hidden from customers"}</p>
+                                  </div>
+                                </div>
+                              </FormItem>
+                            )} />
+                            <FormField control={form.control} name="featured" render={({ field }) => (
+                              <FormItem>
+                                <div className="flex items-center gap-3 p-4 bg-slate-50 rounded-lg">
+                                  <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                  <div>
+                                    <FormLabel className="flex items-center gap-1"><Star className="h-3 w-3 fill-amber-400 text-amber-400" /> Featured Product</FormLabel>
+                                    <p className="text-xs text-slate-500">Highlighted in the featured section</p>
+                                  </div>
+                                </div>
+                              </FormItem>
+                            )} />
+                            <FormField control={form.control} name="tag" render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Badge / Tag Label</FormLabel>
+                                <p className="text-xs text-slate-500">Small badge shown on the product card (e.g. "New", "Bestseller")</p>
+                                <FormControl><Input placeholder="e.g. New, Bestseller, Limited" {...field} value={field.value ?? ""} /></FormControl>
+                              </FormItem>
+                            )} />
+                          </TabsContent>
+
+                        </div>
+
+                        <div className="px-6 py-4 border-t bg-slate-50 flex justify-end gap-3">
+                          <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
+                          <Button type="submit" disabled={createProduct.isPending || updateProduct.isPending}>
+                            {(createProduct.isPending || updateProduct.isPending) ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Saving…</> : editingProduct ? "Update Product" : "Create Product"}
+                          </Button>
+                        </div>
+                      </Tabs>
+                    </form>
+                  </Form>
+                </DialogContent>
+              </Dialog>
+            </CardHeader>
+            <CardContent className="p-0">
+              {isLoadingProducts ? (
+                <div className="p-8 text-center"><Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" /></div>
+              ) : products?.length === 0 ? (
+                <div className="p-8 text-center text-slate-500">
+                  <Package className="mx-auto h-10 w-10 opacity-20 mb-3" />
+                  <p>No products yet. Click "Add Product" to get started.</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader className="bg-slate-50">
+                      <TableRow>
+                        <TableHead className="w-[60px]">Image</TableHead>
+                        <TableHead>Product</TableHead>
+                        <TableHead>Category / Type</TableHead>
+                        <TableHead>Price</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>SKU</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {products?.map(product => {
+                        const p = product as typeof product & { mrp?: number | null; salePrice?: number | null; sku?: string; productType?: string; featured?: boolean; published?: boolean };
+                        return (
+                          <TableRow key={product.id}>
+                            <TableCell>
+                              {product.image ? (
+                                <img src={product.image} alt={product.name} className="w-10 h-10 object-cover rounded" />
+                              ) : (
+                                <div className="w-10 h-10 bg-slate-100 rounded flex items-center justify-center"><Package className="h-4 w-4 text-slate-300" /></div>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <div className="font-medium text-sm">{product.name}</div>
+                              {p.featured && <span className="text-xs text-amber-600 flex items-center gap-0.5 mt-0.5"><Star className="h-3 w-3 fill-amber-400 text-amber-400" /> Featured</span>}
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className="mb-1 block w-fit">{product.category}</Badge>
+                              {p.productType === "digital" ? (
+                                <Badge className="bg-blue-100 text-blue-700 border-0 text-xs w-fit">Digital</Badge>
+                              ) : (
+                                <Badge variant="secondary" className="text-xs w-fit">Physical</Badge>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <div className="text-sm font-semibold text-primary">₹{p.salePrice ?? product.price}</div>
+                              {p.mrp != null && <div className="text-xs text-slate-400 line-through">MRP ₹{p.mrp}</div>}
+                            </TableCell>
+                            <TableCell>
+                              {p.published !== false ? (
+                                <Badge className="bg-green-100 text-green-700 border-0 text-xs">Published</Badge>
+                              ) : (
+                                <Badge variant="secondary" className="text-xs">Draft</Badge>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-xs text-slate-500 font-mono">{p.sku || "—"}</TableCell>
+                            <TableCell className="text-right space-x-1">
+                              <Button variant="ghost" size="icon" onClick={() => openEditDialog(product)}><Edit className="h-4 w-4" /></Button>
+                              <Button variant="ghost" size="icon" className="text-destructive" onClick={() => handleDelete(product.id)}><Trash2 className="h-4 w-4" /></Button>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* ── ORDERS ── */}
+        <TabsContent value="orders">
+          <Card className="border-0 shadow-sm">
+            <CardHeader className="border-b pb-4 flex flex-row items-center justify-between">
+              <CardTitle>Orders ({orders?.length ?? 0})</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              {isLoadingOrders ? (
+                <div className="p-8 text-center"><Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" /></div>
+              ) : orders?.length === 0 ? (
+                <div className="p-8 text-center text-slate-500">No orders yet.</div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader className="bg-slate-50">
+                      <TableRow>
+                        <TableHead>Order ID</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Customer</TableHead>
+                        <TableHead>Items</TableHead>
+                        <TableHead>Total</TableHead>
+                        <TableHead>Payment</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {orders?.map(order => (
+                        <TableRow key={order.id}>
+                          <TableCell className="font-mono text-xs whitespace-nowrap">{order.id}</TableCell>
+                          <TableCell className="whitespace-nowrap text-xs">{format(new Date(order.createdAt), "MMM d, yyyy HH:mm")}</TableCell>
+                          <TableCell>
+                            <div className="font-medium text-sm">{order.customer.name}</div>
+                            <div className="text-xs text-slate-500">{order.customer.phone}</div>
+                          </TableCell>
+                          <TableCell>
+                            <ul className="text-xs space-y-0.5">
+                              {order.items.map((i, idx) => <li key={idx}>{i.qty}× {i.name}</li>)}
+                            </ul>
+                          </TableCell>
+                          <TableCell className="font-bold whitespace-nowrap">₹{order.total}</TableCell>
+                          <TableCell><span className="text-xs font-medium uppercase bg-slate-100 px-2 py-0.5 rounded">{order.paymentMethod.replace(/_/g, " ")}</span></TableCell>
+                          <TableCell>
+                            <Select value={order.status} onValueChange={(newStatus) => {
+                              updateOrder.mutate({ id: order.id, data: { status: newStatus as ShopOrderStatusUpdateStatus } }, {
+                                onSuccess: () => { queryClient.invalidateQueries({ queryKey: getListShopOrdersQueryKey() }); toast({ title: `Order marked as ${newStatus}` }); },
+                                onError: () => toast({ title: "Failed to update", variant: "destructive" }),
+                              });
+                            }}>
+                              <SelectTrigger className="h-7 text-xs w-[120px]"><SelectValue /></SelectTrigger>
+                              <SelectContent>
+                                {["pending", "confirmed", "shipped", "completed", "cancelled"].map(s => (
+                                  <SelectItem key={s} value={s} className="text-xs capitalize">{s}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex gap-1 justify-end">
+                              <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => { setSelectedOrder(order); setTrackingForm({ trackingNumber: (order as { trackingNumber?: string }).trackingNumber ?? "", trackingUrl: (order as { trackingUrl?: string }).trackingUrl ?? "", carrier: (order as { carrier?: string }).carrier ?? "" }); }}>
+                                <Edit className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-red-500 hover:text-red-700 hover:bg-red-50" onClick={() => setOrderToDelete(order)}>
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Order detail dialog */}
+          <Dialog open={!!selectedOrder} onOpenChange={(open) => { if (!open) setSelectedOrder(null); }}>
+            <DialogContent className="max-w-lg">
+              <DialogHeader><DialogTitle>Order Details</DialogTitle></DialogHeader>
+              {selectedOrder && (
+                <div className="space-y-4 text-sm max-h-[72vh] overflow-y-auto pr-1">
+                  <div className="grid grid-cols-2 gap-2 bg-slate-50 rounded-lg p-3">
+                    <div><span className="text-slate-500 text-xs">Order ID</span><p className="font-mono text-xs mt-0.5">{selectedOrder.id}</p></div>
+                    <div><span className="text-slate-500 text-xs">Date</span><p className="mt-0.5">{format(new Date(selectedOrder.createdAt), "MMM d, yyyy HH:mm")}</p></div>
+                    <div><span className="text-slate-500 text-xs">Payment</span><p className="mt-0.5 uppercase text-xs font-medium">{selectedOrder.paymentMethod.replace(/_/g, " ")}</p></div>
+                    <div><span className="text-slate-500 text-xs">Status</span><p className="mt-0.5 capitalize font-medium">{selectedOrder.status}</p></div>
+                    {selectedOrder.razorpayPaymentId && (
+                      <div className="col-span-2"><span className="text-slate-500 text-xs">Razorpay ID</span><p className="font-mono text-xs mt-0.5">{selectedOrder.razorpayPaymentId}</p></div>
+                    )}
+                  </div>
+                  <div>
+                    <p className="font-semibold mb-1">Customer</p>
+                    <div className="bg-slate-50 rounded-lg p-3 space-y-1">
+                      <p>{selectedOrder.customer.name}</p>
+                      <p className="text-slate-500">{selectedOrder.customer.email}</p>
+                      <p className="text-slate-500">{selectedOrder.customer.phone}</p>
+                      {selectedOrder.customer.address && <p className="text-slate-500 text-xs">{selectedOrder.customer.address}</p>}
+                      {(selectedOrder.customer as { pincode?: string }).pincode && (
+                        <p className="text-slate-500 text-xs flex items-center gap-1"><MapPin className="h-3 w-3" /> Pincode: {(selectedOrder.customer as { pincode?: string }).pincode}</p>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="font-semibold mb-1">Items</p>
+                    <div className="bg-slate-50 rounded-lg p-3 space-y-2">
+                      {selectedOrder.items.map((item, idx) => (
+                        <div key={idx} className="flex justify-between">
+                          <span>{item.qty}× {item.name}</span>
+                          <span className="font-medium">₹{item.price * item.qty}</span>
+                        </div>
+                      ))}
+                      {(selectedOrder as { shippingCost?: number | null }).shippingCost != null && (
+                        <div className="flex justify-between text-slate-500">
+                          <span className="flex items-center gap-1"><Truck className="h-3 w-3" /> Shipping</span>
+                          <span>{(selectedOrder as { shippingCost?: number | null }).shippingCost === 0 ? "Free" : `₹${(selectedOrder as { shippingCost?: number | null }).shippingCost}`}</span>
+                        </div>
+                      )}
+                      <div className="border-t pt-2 flex justify-between font-bold">
+                        <span>Total</span><span>₹{selectedOrder.total}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="font-semibold mb-2 flex items-center gap-2"><Truck className="h-4 w-4" /> Shipping & Tracking</p>
+                    {(selectedOrder as { trackingNumber?: string }).trackingNumber ? (
+                      <div className="bg-green-50 border border-green-200 rounded-lg p-3 space-y-1 mb-3">
+                        <p className="text-xs text-green-800 font-medium">Tracking added</p>
+                        <p className="font-mono text-xs">{(selectedOrder as { carrier?: string }).carrier && `${(selectedOrder as { carrier?: string }).carrier} — `}{(selectedOrder as { trackingNumber?: string }).trackingNumber}</p>
+                        {(selectedOrder as { trackingUrl?: string }).trackingUrl && (
+                          <a href={(selectedOrder as { trackingUrl?: string }).trackingUrl} target="_blank" rel="noreferrer" className="text-xs text-primary underline">Track shipment →</a>
+                        )}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-slate-400 mb-3">No tracking info yet.</p>
+                    )}
+                    <div className="space-y-2 bg-slate-50 rounded-lg p-3">
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="text-xs font-medium text-slate-600">Carrier</label>
+                          <Input className="h-8 text-xs mt-1" placeholder="e.g. Shiprocket, DTDC" value={trackingForm.carrier} onChange={e => setTrackingForm(f => ({ ...f, carrier: e.target.value }))} />
+                        </div>
+                        <div>
+                          <label className="text-xs font-medium text-slate-600">Tracking Number</label>
+                          <Input className="h-8 text-xs mt-1" placeholder="AWB / tracking no." value={trackingForm.trackingNumber} onChange={e => setTrackingForm(f => ({ ...f, trackingNumber: e.target.value }))} />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-slate-600">Tracking URL (optional)</label>
+                        <Input className="h-8 text-xs mt-1" placeholder="https://..." value={trackingForm.trackingUrl} onChange={e => setTrackingForm(f => ({ ...f, trackingUrl: e.target.value }))} />
+                      </div>
+                      <Button size="sm" className="w-full h-8 text-xs" disabled={isSavingTracking || !trackingForm.trackingNumber}
+                        onClick={async () => {
+                          setIsSavingTracking(true);
+                          try {
+                            await updateTracking.mutateAsync({ id: selectedOrder.id, data: { trackingNumber: trackingForm.trackingNumber, trackingUrl: trackingForm.trackingUrl || undefined, shippingCarrier: trackingForm.carrier || undefined } });
+                            queryClient.invalidateQueries({ queryKey: getListShopOrdersQueryKey() });
+                            toast({ title: "Tracking updated" });
+                            setTrackingForm({ trackingNumber: "", trackingUrl: "", carrier: "" });
+                          } catch {
+                            toast({ title: "Failed to update tracking", variant: "destructive" });
+                          } finally {
+                            setIsSavingTracking(false);
+                          }
+                        }}>
+                        {isSavingTracking ? <Loader2 className="h-3 w-3 animate-spin" /> : "Save Tracking Info"}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </DialogContent>
+          </Dialog>
+
+          <AlertDialog open={!!orderToDelete} onOpenChange={(open) => { if (!open) setOrderToDelete(null); }}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete this order?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Permanently deletes order <span className="font-mono">{orderToDelete?.id}</span> from {orderToDelete?.customer.name}. This cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction className="bg-red-600 hover:bg-red-700" onClick={() => {
+                  if (!orderToDelete) return;
+                  deleteOrder.mutate({ id: orderToDelete.id }, {
+                    onSuccess: () => { queryClient.invalidateQueries({ queryKey: getListShopOrdersQueryKey() }); toast({ title: "Order deleted" }); setOrderToDelete(null); },
+                    onError: () => toast({ title: "Failed to delete", variant: "destructive" }),
+                  });
+                }}>Delete</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </TabsContent>
+
+        {/* ── SETTINGS ── */}
+        <TabsContent value="settings">
+          <div className="grid gap-6 max-w-2xl">
+
+            {/* Grid Layout */}
+            <Card className="border-0 shadow-sm">
+              <CardHeader className="border-b pb-4">
+                <CardTitle className="flex items-center gap-2"><LayoutGrid className="h-4 w-4" /> Product Grid Layout</CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <p className="text-sm text-slate-500 mb-4">Choose how products are displayed on the shop page.</p>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {GRID_OPTIONS.map(opt => {
+                    const active = settingsForm.gridLayout === opt.value;
+                    return (
+                      <button key={opt.value} type="button" onClick={() => setSettingsForm(f => ({ ...f, gridLayout: opt.value }))}
+                        className={`border-2 rounded-lg p-3 text-center transition-all cursor-pointer ${active ? "border-primary bg-primary/5" : "border-slate-200 hover:border-slate-300"}`}>
+                        <div className="flex justify-center mb-2 h-9 items-end px-1 w-full">
+                          <GridPreview type={opt.value} active={active} />
+                        </div>
+                        <p className={`text-xs font-medium ${active ? "text-primary" : "text-slate-700"}`}>{opt.label}</p>
+                        <p className="text-xs text-slate-400">{opt.desc}</p>
+                      </button>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Categories */}
+            <Card className="border-0 shadow-sm">
+              <CardHeader className="border-b pb-4">
+                <CardTitle className="flex items-center gap-2"><Tag className="h-4 w-4" /> Product Categories</CardTitle>
+              </CardHeader>
+              <CardContent className="p-6 space-y-4">
+                <p className="text-sm text-slate-500">Manage categories available in the shop and product forms.</p>
+                <div className="flex gap-2">
+                  <Input placeholder="New category name..." value={newCategory} onChange={e => setNewCategory(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === "Enter") { e.preventDefault(); const cat = newCategory.trim(); if (cat && !settingsForm.shopCategories.includes(cat)) { setSettingsForm(f => ({ ...f, shopCategories: [...f.shopCategories, cat] })); setNewCategory(""); } }
+                    }} />
+                  <Button type="button" variant="outline" onClick={() => {
+                    const cat = newCategory.trim();
+                    if (cat && !settingsForm.shopCategories.includes(cat)) { setSettingsForm(f => ({ ...f, shopCategories: [...f.shopCategories, cat] })); setNewCategory(""); }
+                  }}><Plus className="h-4 w-4 mr-1" /> Add</Button>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {settingsForm.shopCategories.map(cat => (
+                    <div key={cat} className="flex items-center gap-1 bg-slate-100 rounded-full px-3 py-1">
+                      <span className="text-sm text-slate-700">{cat}</span>
+                      <button type="button" onClick={() => setSettingsForm(f => ({ ...f, shopCategories: f.shopCategories.filter(c => c !== cat) }))} className="text-slate-400 hover:text-red-500">
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <Button type="button" variant="ghost" size="sm" className="text-xs text-slate-500" onClick={() => setSettingsForm(f => ({ ...f, shopCategories: DEFAULT_CATEGORIES }))}>
+                  Reset to defaults
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Shop Identity */}
+            <Card className="border-0 shadow-sm">
+              <CardHeader className="border-b pb-4">
+                <CardTitle className="flex items-center gap-2"><Globe className="h-4 w-4" /> Shop Identity</CardTitle>
+              </CardHeader>
+              <CardContent className="p-6 space-y-4">
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-slate-700">Shop Name</label>
+                  <p className="text-xs text-slate-500">Appears in the navbar and browser tab</p>
+                  <Input value={settingsForm.shopName} onChange={e => setSettingsForm(f => ({ ...f, shopName: e.target.value }))} placeholder="Neenas Giftsella" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-slate-700">Store Domain</label>
+                  <p className="text-xs text-slate-500">The live domain where your shop is hosted (e.g. neenasgifts.store)</p>
+                  <div className="flex items-center border border-input rounded-md overflow-hidden focus-within:ring-1 focus-within:ring-ring">
+                    <span className="px-3 py-2 bg-slate-50 text-slate-400 text-sm border-r border-input select-none shrink-0">https://</span>
+                    <Input
+                      value={settingsForm.storeDomain.replace(/^https?:\/\//, "")}
+                      onChange={e => setSettingsForm(f => ({ ...f, storeDomain: e.target.value.replace(/^https?:\/\//, "") }))}
+                      placeholder="neenasgifts.store"
+                      className="border-0 focus-visible:ring-0 rounded-none font-mono"
+                    />
+                  </div>
+                  {settingsForm.storeDomain && (
+                    <a href={`https://${settingsForm.storeDomain.replace(/^https?:\/\//, "")}`} target="_blank" rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-xs text-primary hover:underline mt-1">
+                      <Globe className="h-3 w-3" /> Open {settingsForm.storeDomain.replace(/^https?:\/\//, "")} ↗
+                    </a>
+                  )}
+                </div>
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-slate-700">Homepage Title</label>
+                  <Input value={settingsForm.shopTitle} onChange={e => setSettingsForm(f => ({ ...f, shopTitle: e.target.value }))} placeholder="Shop with Purpose" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-slate-700">Page Subtitle</label>
+                  <Textarea rows={3} value={settingsForm.shopSubtitle} onChange={e => setSettingsForm(f => ({ ...f, shopSubtitle: e.target.value }))} placeholder="Describe your shop..." />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Announcement Banner */}
+            <Card className="border-0 shadow-sm">
+              <CardHeader className="border-b pb-4">
+                <CardTitle className="flex items-center gap-2"><Megaphone className="h-4 w-4" /> Announcement Banner</CardTitle>
+              </CardHeader>
+              <CardContent className="p-6 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-slate-700">Show banner on shop</p>
+                    <p className="text-xs text-slate-500">Displays an announcement bar at the top</p>
+                  </div>
+                  <Switch checked={settingsForm.announcementEnabled} onCheckedChange={v => setSettingsForm(f => ({ ...f, announcementEnabled: v }))} />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-slate-700">Banner Message</label>
+                  <Input value={settingsForm.announcementText} onChange={e => setSettingsForm(f => ({ ...f, announcementText: e.target.value }))} placeholder="e.g. Free shipping on orders above ₹500!" />
+                </div>
+                {settingsForm.announcementEnabled && settingsForm.announcementText && (
+                  <div className="bg-primary text-white text-sm py-2 px-4 rounded flex items-center gap-2">
+                    <Megaphone className="h-3 w-3" /> {settingsForm.announcementText}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Navigation Links */}
+            <Card className="border-0 shadow-sm">
+              <CardHeader className="border-b pb-4">
+                <CardTitle className="flex items-center gap-2"><Globe className="h-4 w-4" /> Navigation Links</CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-slate-700">Show "Main Site" link in navbar</p>
+                    <p className="text-xs text-slate-500">When off, shoppers won't see a link back to the foundation website — useful when sharing the shop independently</p>
+                  </div>
+                  <Switch checked={settingsForm.showMainSiteLink} onCheckedChange={v => setSettingsForm(f => ({ ...f, showMainSiteLink: v }))} />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* UPI Payment */}
+            <Card className="border-0 shadow-sm">
+              <CardHeader className="border-b pb-4">
+                <CardTitle className="flex items-center gap-2"><ShoppingCart className="h-4 w-4" /> UPI Payment — Neenas Enterprises</CardTitle>
+              </CardHeader>
+              <CardContent className="p-6 space-y-4">
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-slate-700">UPI ID</label>
+                  <Input value={settingsForm.upiId} onChange={e => setSettingsForm(f => ({ ...f, upiId: e.target.value }))} placeholder="neenasenterprises@ybl" className="font-mono" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-slate-700">Razorpay Key ID</label>
+                  <Input value={settingsForm.razorpayKeyId} onChange={e => setSettingsForm(f => ({ ...f, razorpayKeyId: e.target.value }))} placeholder="rzp_live_..." className="font-mono" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-slate-700">UPI QR Code Image</label>
+                  <div className="flex gap-3 items-start">
+                    <Input value={settingsForm.upiQrUrl} onChange={e => setSettingsForm(f => ({ ...f, upiQrUrl: e.target.value }))} placeholder="URL or upload →" className="flex-1" />
+                    <input type="file" accept="image/*" ref={qrFileInputRef} className="hidden"
+                      onChange={e => { const f = e.target.files?.[0]; if (f) handleQrUpload(f); e.target.value = ""; }} />
+                    <Button type="button" variant="outline" size="icon" disabled={isQrUploading} onClick={() => qrFileInputRef.current?.click()}>
+                      {isQrUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                    </Button>
+                    {settingsForm.upiQrUrl && (
+                      <Button type="button" variant="ghost" size="icon" onClick={() => setSettingsForm(f => ({ ...f, upiQrUrl: "" }))}><X className="h-4 w-4" /></Button>
+                    )}
+                  </div>
+                  {settingsForm.upiQrUrl && <img src={settingsForm.upiQrUrl} alt="QR Preview" className="w-32 h-32 object-contain border rounded" />}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Shipping */}
+            <Card className="border-0 shadow-sm">
+              <CardHeader className="border-b pb-4">
+                <CardTitle className="flex items-center gap-2"><Truck className="h-4 w-4" /> Shipping Settings</CardTitle>
+              </CardHeader>
+              <CardContent className="p-6 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-slate-700">Enable Shipping Calculation</p>
+                    <p className="text-xs text-slate-500">Show shipping cost at checkout based on pincode</p>
+                  </div>
+                  <Switch checked={settingsForm.shippingEnabled} onCheckedChange={v => setSettingsForm(f => ({ ...f, shippingEnabled: v }))} />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-sm font-medium text-slate-700">Warehouse Pincode</label>
+                    <Input value={settingsForm.warehousePincode} onChange={e => setSettingsForm(f => ({ ...f, warehousePincode: e.target.value }))} placeholder="e.g. 560001" maxLength={6} className="font-mono" />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-sm font-medium text-slate-700">Free Shipping Above (₹)</label>
+                    <Input type="number" value={settingsForm.freeShippingAbove} onChange={e => setSettingsForm(f => ({ ...f, freeShippingAbove: Number(e.target.value) }))} placeholder="e.g. 999" />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-sm font-medium text-slate-700">Flat Shipping Rate (₹)</label>
+                    <Input type="number" value={settingsForm.flatShippingRate} onChange={e => setSettingsForm(f => ({ ...f, flatShippingRate: Number(e.target.value) }))} placeholder="e.g. 50" />
+                  </div>
+                </div>
+                <div className="border-t pt-4">
+                  <p className="text-sm font-medium text-slate-700 mb-1">Shiprocket Integration (optional)</p>
+                  <div className="space-y-3">
+                    <Input value={settingsForm.shiprocketEmail} onChange={e => setSettingsForm(f => ({ ...f, shiprocketEmail: e.target.value }))} placeholder="your-shiprocket-email@example.com" type="email" />
+                    <Input value={settingsForm.shiprocketToken} onChange={e => setSettingsForm(f => ({ ...f, shiprocketToken: e.target.value }))} placeholder="Bearer token from Shiprocket" type="password" className="font-mono" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Button onClick={handleSaveSettings} disabled={isSavingSettings} size="lg" className="w-full">
+              {isSavingSettings ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Saving...</> : "Save All Settings"}
+            </Button>
+
+          </div>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}

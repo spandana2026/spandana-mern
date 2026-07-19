@@ -1,0 +1,696 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Open+Sans:ital,wght@0,300;0,400;0,600;1,400&display=swap');
+@import "tailwindcss";
+@import "tw-animate-css";
+@plugin "@tailwindcss/typography";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-card-border: hsl(var(--card-border));
+
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-popover-border: hsl(var(--popover-border));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-primary-border: var(--primary-border);
+
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-secondary-border: var(--secondary-border);
+
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-muted-border: var(--muted-border);
+
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-accent-border: var(--accent-border);
+
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-destructive-border: var(--destructive-border);
+
+  --color-chart-1: hsl(var(--chart-1));
+  --color-chart-2: hsl(var(--chart-2));
+  --color-chart-3: hsl(var(--chart-3));
+  --color-chart-4: hsl(var(--chart-4));
+  --color-chart-5: hsl(var(--chart-5));
+
+  --color-sidebar: hsl(var(--sidebar));
+  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+  --color-sidebar-border: hsl(var(--sidebar-border));
+  --color-sidebar-primary: hsl(var(--sidebar-primary));
+  --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
+  --color-sidebar-primary-border: var(--sidebar-primary-border);
+  --color-sidebar-accent: hsl(var(--sidebar-accent));
+  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
+  --color-sidebar-accent-border: var(--sidebar-accent-border);
+  --color-sidebar-ring: hsl(var(--sidebar-ring));
+
+  --font-sans: var(--app-font-sans);
+  --font-serif: var(--app-font-serif);
+  --font-mono: var(--app-font-mono);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+/* LIGHT MODE */
+:root {
+  --button-outline: rgba(0,0,0, .10);
+  --badge-outline: rgba(0,0,0, .05);
+
+  --opaque-button-border-intensity: -8;
+
+  --elevate-1: rgba(0,0,0, .03);
+  --elevate-2: rgba(0,0,0, .08);
+
+  --background: 220 30% 97%; /* Near white with blue tint */
+  --foreground: 225 60% 12%; /* Deep navy text */
+
+  --border: 225 30% 86%;
+
+  --card: 225 40% 99%;
+  --card-foreground: 225 60% 12%;
+  --card-border: 225 30% 86%;
+
+  --sidebar: 225 40% 99%;
+  --sidebar-foreground: 225 60% 12%;
+  --sidebar-border: 225 30% 86%;
+  --sidebar-primary: 225 100% 31%; /* Philips blue #0033A0 */
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 225 30% 92%;
+  --sidebar-accent-foreground: 225 60% 12%;
+  --sidebar-ring: 225 100% 31%;
+
+  --popover: 225 40% 99%;
+  --popover-foreground: 225 60% 12%;
+  --popover-border: 225 30% 86%;
+
+  --primary: 225 100% 31%; /* Philips blue #0033A0 */
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 225 80% 50%; /* Brighter blue for accents */
+  --secondary-foreground: 0 0% 100%;
+
+  --muted: 225 30% 92%;
+  --muted-foreground: 225 20% 45%;
+
+  --accent: 210 90% 55%; /* Sky blue highlight */
+  --accent-foreground: 225 60% 12%;
+
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+
+  --input: 225 25% 86%;
+  --ring: 225 100% 31%;
+
+  --chart-1: 225 100% 31%;
+  --chart-2: 225 80% 50%;
+  --chart-3: 210 90% 55%;
+  --chart-4: 225 60% 12%;
+  --chart-5: 225 30% 92%;
+
+  --app-font-sans: 'Open Sans', sans-serif;
+  --app-font-serif: 'Montserrat', sans-serif;
+  --app-font-mono: Menlo, monospace;
+  
+  --radius: 0.75rem;
+
+  --shadow-2xs: 0px 2px 0px 0px rgba(27, 31, 46, 0.05);
+  --shadow-xs: 0px 2px 0px 0px rgba(27, 31, 46, 0.05);
+  --shadow-sm: 0px 2px 0px 0px rgba(27, 31, 46, 0.05), 0px 1px 2px -1px rgba(27, 31, 46, 0.05);
+  --shadow: 0px 2px 0px 0px rgba(27, 31, 46, 0.05), 0px 1px 2px -1px rgba(27, 31, 46, 0.05);
+  --shadow-md: 0px 2px 0px 0px rgba(27, 31, 46, 0.05), 0px 2px 4px -1px rgba(27, 31, 46, 0.05);
+  --shadow-lg: 0px 2px 0px 0px rgba(27, 31, 46, 0.05), 0px 4px 6px -1px rgba(27, 31, 46, 0.05);
+  --shadow-xl: 0px 2px 0px 0px rgba(27, 31, 46, 0.05), 0px 8px 10px -1px rgba(27, 31, 46, 0.05);
+  --shadow-2xl: 0px 2px 0px 0px rgba(27, 31, 46, 0.05);
+  --tracking-normal: 0em;
+  --spacing: 0.25rem;
+
+  --sidebar-primary-border: hsl(var(--sidebar-primary));
+  --sidebar-primary-border: hsl(from hsl(var(--sidebar-primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  --sidebar-accent-border: hsl(var(--sidebar-accent));
+  --sidebar-accent-border: hsl(from hsl(var(--sidebar-accent)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  --primary-border: hsl(var(--primary));
+  --primary-border: hsl(from hsl(var(--primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  --secondary-border: hsl(var(--secondary));
+  --secondary-border: hsl(from hsl(var(--secondary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  --muted-border: hsl(var(--muted));
+  --muted-border: hsl(from hsl(var(--muted)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  --accent-border: hsl(var(--accent));
+  --accent-border: hsl(from hsl(var(--accent)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  --destructive-border: hsl(var(--destructive));
+  --destructive-border: hsl(from hsl(var(--destructive)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+}
+
+.dark {
+  --button-outline: rgba(255,255,255, .10);
+  --badge-outline: rgba(255,255,255, .05);
+  --opaque-button-border-intensity: 9;
+  --elevate-1: rgba(255,255,255, .04);
+  --elevate-2: rgba(255,255,255, .09);
+
+  --background: 230 30% 10%; /* Deep navy dark */
+  --foreground: 220 40% 97%;
+
+  --border: 230 20% 20%;
+
+  --card: 230 28% 13%;
+  --card-foreground: 220 40% 97%;
+  --card-border: 230 20% 20%;
+
+  --sidebar: 230 28% 13%;
+  --sidebar-foreground: 220 40% 97%;
+  --sidebar-border: 230 20% 20%;
+  --sidebar-primary: 225 100% 45%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 225 20% 20%;
+  --sidebar-accent-foreground: 225 40% 95%;
+  --sidebar-ring: 225 100% 45%;
+
+  --popover: 225 28% 13%;
+  --popover-foreground: 225 40% 95%;
+  --popover-border: 225 20% 20%;
+
+  --primary: 225 100% 45%; /* brighter for dark bg */
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 225 80% 60%;
+  --secondary-foreground: 0 0% 100%;
+
+  --muted: 225 20% 20%;
+  --muted-foreground: 225 20% 65%;
+
+  --accent: 210 90% 60%;
+  --accent-foreground: 225 60% 10%;
+
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+
+  --input: 225 20% 25%;
+  --ring: 225 100% 45%;
+
+  --chart-1: 225 100% 45%;
+  --chart-2: 225 80% 60%;
+  --chart-3: 210 90% 60%;
+  --chart-4: 225 40% 95%;
+  --chart-5: 225 20% 20%;
+
+  --shadow-2xs: 0px 2px 0px 0px rgba(0, 0, 0, 0.2);
+  --shadow-xs: 0px 2px 0px 0px rgba(0, 0, 0, 0.2);
+  --shadow-sm: 0px 2px 0px 0px rgba(0, 0, 0, 0.2), 0px 1px 2px -1px rgba(0, 0, 0, 0.2);
+  --shadow: 0px 2px 0px 0px rgba(0, 0, 0, 0.2), 0px 1px 2px -1px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0px 2px 0px 0px rgba(0, 0, 0, 0.2), 0px 2px 4px -1px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0px 2px 0px 0px rgba(0, 0, 0, 0.2), 0px 4px 6px -1px rgba(0, 0, 0, 0.2);
+  --shadow-xl: 0px 2px 0px 0px rgba(0, 0, 0, 0.2), 0px 8px 10px -1px rgba(0, 0, 0, 0.2);
+  --shadow-2xl: 0px 2px 0px 0px rgba(0, 0, 0, 0.2);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    /* Smooth font-size transitions when user adjusts size */
+    transition: font-size 0.2s ease;
+    /* Prevent iOS font inflation */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    /* Prevent horizontal overflow — clip doesn't create a scroll container (sticky-safe) */
+    overflow-x: clip;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+    /* Ensure at least 16px base on all viewports */
+    font-size: clamp(1rem, 1vw + 0.75rem, 1.125rem);
+    line-height: 1.65;
+    /* Belt-and-suspenders overflow guard — clip keeps sticky positioning working */
+    overflow-x: clip;
+    /* Allow vertical scroll always */
+    min-height: 100dvh;
+  }
+
+  /* Mobile: bump up commonly-small text classes for readability */
+  @media (max-width: 767px) {
+    p, li, label, input, textarea, select {
+      font-size: max(1rem, 1em);
+    }
+
+    /* Only apply forced sizes when NOT in elderly mode (elderly mode uses html font-size scaling) */
+    html:not(.elderly-mode) .text-xs  { font-size: 0.8rem  !important; }
+    html:not(.elderly-mode) .text-sm  { font-size: 0.9rem  !important; }
+    html:not(.elderly-mode) .text-base { font-size: 1rem   !important; }
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif;
+    line-height: 1.25;
+  }
+}
+
+/* ══════════════════════════════════════════════════════
+   ── ELDERLY MODE (font level 3 = 132%) — MOBILE ONLY ──
+   Strategy: 132% html font-size does the heavy lifting for
+   body/paragraph/label copy (all rem-based classes scale
+   automatically). The rules below only fix the specific
+   things that break or look wrong at 132% on a 390px screen.
+   ══════════════════════════════════════════════════════ */
+@media (max-width: 767px) {
+
+  /* ── 1. BODY BREATHING ROOM ── */
+  html.elderly-mode body {
+    line-height: 1.85;
+    letter-spacing: 0.012em;
+  }
+
+  /* ── 2. HEADINGS — prevent whitespace-nowrap overflow & keep centred ──
+     At 132% a nowrap heading can be wider than 390px and get clipped by
+     an overflow-hidden section, appearing right-aligned or cut off.
+     Force wrapping on every heading as a catch-all. */
+  html.elderly-mode h1,
+  html.elderly-mode h2,
+  html.elderly-mode h3 {
+    white-space: normal !important;
+    overflow-wrap: break-word !important;
+    word-break: break-word !important;
+  }
+
+  /* ── 3. HEADING SIZE CAPS ──
+     text-5xl = 3rem × 1.32 ≈ 63px  → too large on 390px, cap to 2rem
+     text-4xl = 2.25rem × 1.32 ≈ 47px → cap to 1.9rem
+     text-3xl = 1.875rem × 1.32 ≈ 40px → 1.65rem keeps it comfortably legible
+     text-2xl = 1.5rem × 1.32 ≈ 32px  → cap stat-numbers to 1.35rem */
+  html.elderly-mode .text-5xl { font-size: 2rem    !important; line-height: 1.2 !important; }
+  html.elderly-mode .text-4xl { font-size: 1.9rem  !important; line-height: 1.2 !important; }
+  html.elderly-mode .text-3xl { font-size: 1.65rem !important; line-height: 1.25 !important; }
+  html.elderly-mode .text-2xl { font-size: 1.35rem !important; }
+
+  /* ── 4. NAV — keep the A-size buttons usable ──
+     The font-level buttons are w-5 h-5 (20px fixed). At 132% the 'text-xl'
+     A-button becomes 1.25rem × 1.32 ≈ 26px inside a 20px box — it overflows.
+     Fix with a px value so it doesn't compound-scale. */
+  html.elderly-mode nav .text-xl { font-size: 14px !important; }
+  html.elderly-mode nav .text-base { font-size: 12px !important; }
+  html.elderly-mode nav .text-sm { font-size: 11px !important; }
+
+  /* ── 5. LETTER-SPACING — widest tracking gets very wide at 132%; rein in ── */
+  html.elderly-mode .tracking-widest { letter-spacing: 0.1em !important; }
+
+  /* ── 6. FORM INPUTS — bigger tap targets ── */
+  html.elderly-mode input[type="text"],
+  html.elderly-mode input[type="email"],
+  html.elderly-mode input[type="tel"],
+  html.elderly-mode input[type="number"],
+  html.elderly-mode input[type="date"],
+  html.elderly-mode input[type="password"],
+  html.elderly-mode textarea {
+    min-height: 3rem !important;
+    padding-top: 0.75rem !important;
+    padding-bottom: 0.75rem !important;
+  }
+
+  /* ── 7. FORM LABELS — heavier weight for readability ── */
+  html.elderly-mode form label { font-weight: 600 !important; }
+
+  /* ── 8. CHIP BUTTONS (volunteer form) ── */
+  html.elderly-mode [data-chip] {
+    min-height: 2.5rem !important;
+    padding-top: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
+    font-size: 0.875rem !important;
+  }
+
+  /* ── 9. FORM DESCRIPTION TEXT ── */
+  html.elderly-mode [data-slot="form-description"] {
+    font-size: 0.875rem !important;
+    line-height: 1.6 !important;
+  }
+
+  /* ── 10. SECTION BADGES / PILLS — shrink-to-fit on narrow viewport ── */
+  html.elderly-mode .inline-flex.rounded-full {
+    max-width: 100%;
+    flex-wrap: wrap;
+    white-space: normal !important;
+  }
+
+  /* ── 11. INLINE STATS GRID — ensure 2-col layout doesn't overflow ── */
+  html.elderly-mode .grid-cols-2 {
+    gap: 0.75rem !important;
+  }
+}
+
+/* ── PAPER WHITE ELDERLY MODE ── */
+
+/*
+ * Strategy: override CSS variables at the html level so ALL semantic
+ * Tailwind classes (bg-background, bg-card, text-foreground, text-muted-foreground, etc.)
+ * adapt automatically. Dark/coloured sections (bg-primary, bg-foreground, #05091A)
+ * keep their own backgrounds — only their low-opacity white text gets boosted.
+ */
+html.paper-white-mobile {
+  --background: 40 60% 97%;        /* warm cream paper  */
+  --foreground: 225 75% 8%;        /* near-black navy   */
+  --card: 35 50% 99%;              /* warm white cards  */
+  --card-foreground: 225 75% 8%;
+  --muted: 40 25% 90%;             /* warm muted bg     */
+  --muted-foreground: 225 25% 28%; /* darker muted text — was 45% lightness */
+  --border: 40 15% 80%;            /* warm subtle border */
+  --input: 40 20% 88%;
+
+  background-color: hsl(40, 60%, 97%);
+  color: hsl(225, 75%, 8%);
+  line-height: 1.85;
+  letter-spacing: 0.012em;
+}
+
+html.paper-white-mobile body {
+  background-color: hsl(40, 60%, 97%);
+  color: hsl(225, 75%, 8%);
+}
+
+/* Nav: cream paper background */
+html.paper-white-mobile nav {
+  background-color: rgba(251, 248, 240, 0.97) !important;
+  border-bottom-color: #E8E2D4 !important;
+}
+
+/* Body copy: bump size and spacing for readability */
+html.paper-white-mobile p,
+html.paper-white-mobile li {
+  font-size: max(1.05rem, 1em) !important;
+  line-height: 1.85 !important;
+}
+
+/* h2 blue accent underline — visual hierarchy marker */
+html.paper-white-mobile h2::after {
+  content: "";
+  display: block;
+  width: 2.5rem;
+  height: 3px;
+  background: linear-gradient(90deg, #0033A0, #4A90D9);
+  border-radius: 2px;
+  margin-top: 0.4rem;
+}
+
+html.paper-white-mobile .text-center h2::after {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ── DARK / COLOURED SECTION FIXES ──
+   These sections keep their own backgrounds. Their text uses opacity-reduced
+   white (text-white/55 etc.) which becomes visible because we boost it. */
+
+/* Stats + Newsletter + Programs hero + GetInvolved hero — all use bg-primary */
+html.paper-white-mobile section.bg-primary p,
+html.paper-white-mobile section.bg-primary span,
+html.paper-white-mobile section.bg-primary div,
+html.paper-white-mobile section.bg-primary h1,
+html.paper-white-mobile section.bg-primary h2,
+html.paper-white-mobile section.bg-primary h3 {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+/* Gen Z Bold dark section — bg-[#05091A] */
+html.paper-white-mobile section[class*="05091A"] p,
+html.paper-white-mobile section[class*="05091A"] span,
+html.paper-white-mobile section[class*="05091A"] h1,
+html.paper-white-mobile section[class*="05091A"] h2,
+html.paper-white-mobile section[class*="05091A"] h3,
+html.paper-white-mobile section[class*="05091A"] div {
+  color: rgba(255, 255, 255, 0.92) !important;
+}
+
+/* Impact Ticker — bg-foreground bar */
+html.paper-white-mobile div.bg-foreground span,
+html.paper-white-mobile div.bg-foreground p {
+  color: rgba(255, 255, 255, 0.95) !important;
+  opacity: 1 !important;
+}
+
+/* ── FOOTER ──
+   Footer has a hardcoded dark bg-[#0a0f1e]. Its own white/opacity text
+   hierarchy (text-white/50, text-white/30 etc.) is intentional and must
+   be preserved in all modes. Only ensure primary-coloured icons are
+   readable on the dark background. */
+html.paper-white-mobile footer {
+  /* Keep dark background — prevent any cream bleed from the page */
+  background-color: #0a0f1e !important;
+}
+
+html.paper-white-mobile footer .text-primary,
+html.paper-white-mobile footer svg.text-primary {
+  color: #6EA8FE !important;
+}
+
+/* ── INPUTS ── */
+html.paper-white-mobile input,
+html.paper-white-mobile textarea,
+html.paper-white-mobile select {
+  background-color: #FFFFFF !important;
+  color: #1A1A2E !important;
+  border-color: #C8C2B4 !important;
+}
+
+/* ── FORM LABELS & HELPER TEXT ── */
+html.paper-white-mobile label {
+  color: hsl(225, 75%, 8%) !important;
+  font-weight: 600;
+}
+
+html.paper-white-mobile .text-muted-foreground {
+  color: hsl(225, 25%, 28%) !important;
+}
+
+html.paper-white-mobile [data-slot="form-description"] {
+  color: hsl(225, 25%, 32%) !important;
+}
+
+/* Placeholder text — dark enough to read on cream */
+html.paper-white-mobile input::placeholder,
+html.paper-white-mobile textarea::placeholder {
+  color: #6B6B80 !important;
+  opacity: 1 !important;
+}
+
+/* ── AFFIRMATION BANNERS ── */
+
+/* Blue "Halfway there" banner */
+html.paper-white-mobile .bg-primary\/8 {
+  background-color: #E8EEF8 !important;
+  border-color: #7B9DD4 !important;
+}
+html.paper-white-mobile .text-primary {
+  color: #002680 !important;
+}
+
+/* Green "Almost there" banner */
+html.paper-white-mobile .bg-green-50 {
+  background-color: #EBF5EB !important;
+}
+html.paper-white-mobile .border-green-200 {
+  border-color: #7CBF7C !important;
+}
+html.paper-white-mobile .text-green-700 {
+  color: #1E5C1E !important;
+}
+html.paper-white-mobile .text-green-600\/80 {
+  color: #2E6B2E !important;
+}
+
+/* Amber "Last stretch" banner */
+html.paper-white-mobile .bg-amber-50 {
+  background-color: #FDF5E4 !important;
+}
+html.paper-white-mobile .border-amber-200 {
+  border-color: #C9A23A !important;
+}
+html.paper-white-mobile .text-amber-700 {
+  color: #7A5C00 !important;
+}
+html.paper-white-mobile .text-amber-600\/80 {
+  color: #8A6800 !important;
+}
+
+/* ── CHIP BUTTONS (Areas of Interest / Availability) ── */
+html.paper-white-mobile [data-chip] {
+  background-color: #F5F0E8 !important;
+  border-color: #C8C2B4 !important;
+  color: hsl(225, 75%, 8%) !important;
+}
+html.paper-white-mobile [data-chip][aria-pressed="true"],
+html.paper-white-mobile [data-chip].selected {
+  background-color: #0033A0 !important;
+  border-color: #0033A0 !important;
+  color: #FFFFFF !important;
+}
+
+/* ── FORM CARD ── */
+html.paper-white-mobile .bg-card,
+html.paper-white-mobile [class*="bg-card"] {
+  background-color: #FDFAF4 !important;
+}
+
+/* ── CHECKBOX / SAFEGUARDING BLOCK ── */
+html.paper-white-mobile .bg-muted\/40 {
+  background-color: #F0EBE0 !important;
+}
+html.paper-white-mobile .bg-primary\/5 {
+  background-color: #E8EEF8 !important;
+}
+
+/* ── SECTION DIVIDERS ── */
+html.paper-white-mobile .border-border,
+html.paper-white-mobile .border-t {
+  border-color: #D8D2C4 !important;
+}
+
+/* ── MOBILE NAV IN PAPER WHITE ── */
+html.paper-white-mobile nav .bg-muted\/50 {
+  background-color: rgba(235, 228, 210, 0.7) !important;
+}
+html.paper-white-mobile nav .border-border {
+  border-color: #D4CCB8 !important;
+}
+
+/* ── ELDERLY + PAPER WHITE COMBO ── */
+html.paper-white-mobile.elderly-mode {
+  line-height: 2;
+  letter-spacing: 0.02em;
+}
+html.paper-white-mobile.elderly-mode p,
+html.paper-white-mobile.elderly-mode li {
+  font-size: max(1.1rem, 1em) !important;
+  line-height: 2 !important;
+}
+
+@layer utilities {
+  input[type="search"]::-webkit-search-cancel-button {
+    @apply hidden;
+  }
+
+  [contenteditable][data-placeholder]:empty::before {
+    content: attr(data-placeholder);
+    color: hsl(var(--muted-foreground));
+    pointer-events: none;
+  }
+
+  .no-default-hover-elevate {}
+  .no-default-active-elevate {}
+
+  .toggle-elevate::before,
+  .toggle-elevate-2::before {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    inset: 0px;
+    border-radius: inherit;
+    z-index: -1;
+  }
+
+  .toggle-elevate.toggle-elevated::before {
+    background-color: var(--elevate-2);
+  }
+
+  .border.toggle-elevate::before {
+    inset: -1px;
+  }
+
+  .hover-elevate:not(.no-default-hover-elevate),
+  .active-elevate:not(.no-default-active-elevate),
+  .hover-elevate-2:not(.no-default-hover-elevate),
+  .active-elevate-2:not(.no-default-active-elevate) {
+    position: relative;
+    z-index: 0;
+  }
+
+  .hover-elevate:not(.no-default-hover-elevate)::after,
+  .active-elevate:not(.no-default-active-elevate)::after,
+  .hover-elevate-2:not(.no-default-hover-elevate)::after,
+  .active-elevate-2:not(.no-default-active-elevate)::after {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    inset: 0px;
+    border-radius: inherit;
+    z-index: 999;
+  }
+
+  .hover-elevate:hover:not(.no-default-hover-elevate)::after,
+  .active-elevate:active:not(.no-default-active-elevate)::after {
+    background-color: var(--elevate-1);
+  }
+
+  .hover-elevate-2:hover:not(.no-default-hover-elevate)::after,
+  .active-elevate-2:active:not(.no-default-active-elevate)::after {
+    background-color: var(--elevate-2);
+  }
+
+  .border.hover-elevate:not(.no-hover-interaction-elevate)::after,
+  .border.active-elevate:not(.no-active-interaction-elevate)::after,
+  .border.hover-elevate-2:not(.no-hover-interaction-elevate)::after,
+  .border.active-elevate-2:not(.no-active-interaction-elevate)::after,
+  .border.hover-elevate:not(.no-hover-interaction-elevate)::after {
+    inset: -1px;
+  }
+}
+
+/* Hide scrollbar but keep scrollability */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ── JOY CORNER — floating emoji animations ── */
+@keyframes fz-float {
+  0%,100% { transform: translateY(0px) rotate(0deg); }
+  35%     { transform: translateY(-11px) rotate(5deg); }
+  70%     { transform: translateY(-5px) rotate(-3deg); }
+}
+@keyframes fz-pulse-glow {
+  0%,100% { box-shadow: 0 0 0 0 rgba(255,80,80,0); }
+  50%     { box-shadow: 0 0 0 6px rgba(255,80,80,0.35); }
+}
+@keyframes fz-shimmer {
+  0%   { background-position: -300% center; }
+  100% { background-position:  300% center; }
+}
+.fz-float-1 { animation: fz-float 3.2s ease-in-out infinite; }
+.fz-float-2 { animation: fz-float 4.1s ease-in-out infinite 0.6s; }
+.fz-float-3 { animation: fz-float 3.7s ease-in-out infinite 1.2s; }
+.fz-float-4 { animation: fz-float 4.5s ease-in-out infinite 0.3s; }
+.fz-float-5 { animation: fz-float 3.0s ease-in-out infinite 0.9s; }
+.fz-hot-pulse { animation: fz-pulse-glow 1.8s ease-in-out infinite; }
+
+/* Story expand — hover reveals full text, click pins it open */
+.story-expand {
+  overflow: hidden;
+  cursor: pointer;
+  max-height: 4.875rem; /* ~3 lines at text-base/leading-relaxed */
+  transition: max-height 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.story-expand-sm {
+  overflow: hidden;
+  cursor: pointer;
+  max-height: 4.25rem; /* ~3 lines at text-sm/leading-relaxed */
+  transition: max-height 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.story-expand:hover,
+.story-expand.story-pinned,
+.story-expand-sm:hover,
+.story-expand-sm.story-pinned {
+  max-height: 400px;
+}

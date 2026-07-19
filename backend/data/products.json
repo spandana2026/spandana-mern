@@ -1,0 +1,98 @@
+[
+  {
+    "id": "1",
+    "name": "Handwoven Jute Tote Bag",
+    "price": 349,
+    "category": "Eco-Friendly",
+    "tag": "Bestseller",
+    "rating": 4.8,
+    "reviews": 42,
+    "desc": "Durable, natural jute tote handcrafted by women artisans in our skill development program. Replaces 500+ single-use plastic bags.",
+    "impact": "Supports 1 artisan for 2 days",
+    "image": "/images/physical.png"
+  },
+  {
+    "id": "2",
+    "name": "Recycled Paper Notebook",
+    "price": 199,
+    "category": "Stationery",
+    "tag": "Eco Pick",
+    "rating": 4.9,
+    "reviews": 61,
+    "desc": "100% recycled paper, hand-bound notebook with 120 pages. Produced at our community center using sustainable materials.",
+    "impact": "Funds 1 child's stationery for a month",
+    "image": "/images/center.png"
+  },
+  {
+    "id": "3",
+    "name": "Beeswax Wraps (Set of 3)",
+    "price": 449,
+    "category": "Eco-Friendly",
+    "tag": "New",
+    "rating": 4.7,
+    "reviews": 28,
+    "desc": "Natural beeswax food wraps as a sustainable alternative to plastic cling film. Reusable for up to a year.",
+    "impact": "Reduces 200 plastic wraps per year",
+    "image": "/images/hero.png"
+  },
+  {
+    "id": "4",
+    "name": "Thrift Cotton Kurti",
+    "price": 299,
+    "category": "Thrift Fashion",
+    "tag": "Limited",
+    "rating": 4.6,
+    "reviews": 19,
+    "desc": "Carefully selected, laundered, and ironed pre-loved ethnic wear. Each piece is unique. Give fashion a second life.",
+    "impact": "Extends garment life by 2+ years",
+    "image": "/images/mental.png"
+  },
+  {
+    "id": "5",
+    "name": "Seed Bomb Kit",
+    "price": 249,
+    "category": "Gardening",
+    "tag": "Eco Pick",
+    "rating": 4.9,
+    "reviews": 35,
+    "desc": "A set of 10 native wildflower seed bombs. Toss them in empty lots or your garden to bring pollinators back.",
+    "impact": "Plants 10 pollinator patches",
+    "image": "/images/physical.png"
+  },
+  {
+    "id": "6",
+    "name": "Coconut Shell Candle",
+    "price": 399,
+    "category": "Home",
+    "tag": "Handmade",
+    "rating": 4.8,
+    "reviews": 47,
+    "desc": "Soy wax candle poured into a natural coconut shell. Hand-poured by our youth skill development trainees.",
+    "impact": "Trains 1 youth for 3 hours",
+    "image": "/images/center.png"
+  },
+  {
+    "id": "7",
+    "name": "Upcycled Denim Pouch",
+    "price": 199,
+    "category": "Thrift Fashion",
+    "tag": "Upcycled",
+    "rating": 4.5,
+    "reviews": 22,
+    "desc": "Cute zipper pouches made from upcycled denim jeans. Each one is one-of-a-kind, handstitched by our women's self-help group.",
+    "impact": "Diverts denim from landfill",
+    "image": "/images/mental.png"
+  },
+  {
+    "id": "8",
+    "name": "Bamboo Cutlery Set",
+    "price": 299,
+    "category": "Eco-Friendly",
+    "tag": "Eco Pick",
+    "rating": 4.9,
+    "reviews": 58,
+    "desc": "A travel-ready bamboo fork, spoon, knife, and straw in a cotton carry pouch. Say no to single-use plastic forever.",
+    "impact": "Prevents 365 plastic cutlery sets per year",
+    "image": "/images/hero.png"
+  }
+]

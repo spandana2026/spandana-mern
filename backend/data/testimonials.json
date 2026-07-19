@@ -1,0 +1,50 @@
+[
+  {
+    "id": "t1",
+    "name": "Dr. Meenakshi Reddy",
+    "role": "Volunteer Physician, 8 years",
+    "text": "Volunteering with Spandana has been the most fulfilling part of my medical career. The organisation is professional, deeply caring, and the impact on communities is real and measurable. I've seen lives change in front of me.",
+    "image": "",
+    "rating": 5,
+    "published": true,
+    "order": 1,
+    "createdAt": "2026-07-14T01:05:50.821706Z",
+    "updatedAt": "2026-07-14T01:05:50.821706Z"
+  },
+  {
+    "id": "t2",
+    "name": "Suresh Kumar",
+    "role": "Corporate Donor",
+    "text": "I've donated to many organisations but Spandana stands out for transparency. They send regular updates, show exactly where funds go, and the 80G receipts are always on time. My entire company now donates annually.",
+    "image": "",
+    "rating": 5,
+    "published": true,
+    "order": 2,
+    "createdAt": "2026-07-14T01:05:50.821706Z",
+    "updatedAt": "2026-07-14T01:05:50.821706Z"
+  },
+  {
+    "id": "t3",
+    "name": "Anjali Sharma",
+    "role": "Beneficiary \u2014 Vocational Training",
+    "text": "The sewing course changed my life. I was dependent on my husband for everything. Now I earn \u20b912,000 a month from home orders and I feel free for the first time. Thank you, Spandana family.",
+    "image": "",
+    "rating": 5,
+    "published": true,
+    "order": 3,
+    "createdAt": "2026-07-14T01:05:50.821706Z",
+    "updatedAt": "2026-07-14T01:05:50.821706Z"
+  },
+  {
+    "id": "t4",
+    "name": "Rahul Nair",
+    "role": "Volunteer \u2014 3 years",
+    "text": "I joined as a weekend volunteer thinking I'd help a little. Three years later I've run 12 camps, trained 50 people, and gained more than I've given. Spandana's culture is incredible \u2014 everyone genuinely cares.",
+    "image": "",
+    "rating": 5,
+    "published": true,
+    "order": 4,
+    "createdAt": "2026-07-14T01:05:50.821706Z",
+    "updatedAt": "2026-07-14T01:05:50.821706Z"
+  }
+]

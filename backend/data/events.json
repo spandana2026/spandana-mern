@@ -1,0 +1,35 @@
+[
+  {
+    "id": "1",
+    "title": "Annual Health Camp 2026",
+    "date": "2026-06-15",
+    "time": "9:00 AM – 4:00 PM",
+    "location": "Sahara Community Center, Secunderabad",
+    "description": "Free medical screenings, consultations, and health awareness sessions for families in underserved communities. Includes dental, vision, and general health checkups.",
+    "image": "/images/physical.png",
+    "category": "Health",
+    "published": true
+  },
+  {
+    "id": "2",
+    "title": "Skill Development Workshop — Tailoring",
+    "date": "2026-07-10",
+    "time": "10:00 AM – 1:00 PM",
+    "location": "Sahara Community Center, Secunderabad",
+    "description": "A hands-on tailoring workshop for women from underserved backgrounds. Participants will learn basic garment construction and explore livelihood pathways through the skill.",
+    "image": "/images/mental.png",
+    "category": "Skills",
+    "published": true
+  },
+  {
+    "id": "3",
+    "title": "Mental Health Awareness Walk",
+    "date": "2026-08-01",
+    "time": "7:00 AM – 9:00 AM",
+    "location": "Tank Bund, Hyderabad",
+    "description": "Join us for a community walk to raise awareness about mental health, break stigmas, and celebrate the strength of those who seek help.",
+    "image": "/images/hero.png",
+    "category": "Mental Health",
+    "published": true
+  }
+]

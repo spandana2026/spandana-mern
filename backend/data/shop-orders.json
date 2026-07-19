@@ -1,0 +1,26 @@
+[
+  {
+    "id": "ORD-MP1KS3O316HU9",
+    "createdAt": "2026-05-11T19:08:58.131Z",
+    "customer": {
+      "name": "Praveen Sajjan Prasad. Seelam",
+      "email": "ipb777@gmail.com",
+      "phone": "+919704075143",
+      "address": "53-1-27A,Vijayanagar Colony, near 7 town police station, opp CPI office, bus stop."
+    },
+    "items": [
+      {
+        "productId": "2",
+        "name": "Recycled Paper Notebook",
+        "price": 199,
+        "qty": 1,
+        "image": "https://images.unsplash.com/photo-1531346878377-a5be20888e57?w=400&q=80"
+      }
+    ],
+    "total": 199,
+    "status": "pending",
+    "paymentMethod": "phonepe",
+    "razorpayPaymentId": null,
+    "razorpayOrderId": null
+  }
+]

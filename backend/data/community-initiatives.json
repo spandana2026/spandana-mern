@@ -1,0 +1,22 @@
+[
+  {
+    "id": "1",
+    "title": "Sahara Community Center",
+    "description": "Our flagship community space providing education, healthcare, and support services.",
+    "icon": "🏠",
+    "image": "",
+    "status": "active",
+    "published": true,
+    "order": 1
+  },
+  {
+    "id": "2",
+    "title": "Women Empowerment Drive",
+    "description": "Self-help groups and micro-entrepreneurship support for women in underserved communities.",
+    "icon": "👩",
+    "image": "",
+    "status": "active",
+    "published": true,
+    "order": 2
+  }
+]

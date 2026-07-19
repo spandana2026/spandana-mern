@@ -1,0 +1,62 @@
+[
+  {
+    "id": "1",
+    "category": "Community",
+    "title": "25 Years of Social Architecture: How Spandana Changed Our Neighbourhood",
+    "excerpt": "When the foundation first opened its doors at the Sahara Community Center, it began with a simple promise: permanent change over temporary relief. Here is how that vision became reality.",
+    "date": "May 2, 2026",
+    "readTime": "5 min read",
+    "image": "/images/hero.png",
+    "published": true
+  },
+  {
+    "id": "2",
+    "category": "Mental Health",
+    "title": "Breaking the Stigma: Why Saying 'It's Okay to Take Help' Matters",
+    "excerpt": "Mental health conversations in underserved communities are often met with silence. Our awareness campaigns are changing that — one small group at a time.",
+    "date": "April 18, 2026",
+    "readTime": "4 min read",
+    "image": "/images/mental.png",
+    "published": true
+  },
+  {
+    "id": "3",
+    "category": "Empowerment",
+    "title": "From Street Vendor to Entrepreneur: Stories from Our Self-Help Groups",
+    "excerpt": "Meet three women whose micro-entrepreneurship journeys began at the Sahara Community Center's skill development workshops — and how they are paying it forward.",
+    "date": "April 5, 2026",
+    "readTime": "6 min read",
+    "image": "/images/physical.png",
+    "published": true
+  },
+  {
+    "id": "4",
+    "category": "Environment",
+    "title": "Green Communities: Our Carbon Footprint Reduction Initiative in Action",
+    "excerpt": "Environmental stewardship is not just a program — it is a way of life we are cultivating together. Here is what our community has achieved in the past year.",
+    "date": "March 22, 2026",
+    "readTime": "3 min read",
+    "image": "/images/center.png",
+    "published": true
+  },
+  {
+    "id": "5",
+    "category": "Legal Aid",
+    "title": "Know Your Rights: How Legal Advocacy is Transforming Lives",
+    "excerpt": "Many families do not know the protections they are entitled to. Our free legal advocacy clinics are making sure that changes — for good.",
+    "date": "March 10, 2026",
+    "readTime": "4 min read",
+    "image": "/images/hero.png",
+    "published": true
+  },
+  {
+    "id": "6",
+    "category": "Health",
+    "title": "Free Health Screenings: What We Found and What We Did About It",
+    "excerpt": "Our recent medical aid camp screened over 300 families. The findings were sobering — and they reinforced exactly why Spandana's work is so critical.",
+    "date": "February 28, 2026",
+    "readTime": "5 min read",
+    "image": "/images/physical.png",
+    "published": true
+  }
+]

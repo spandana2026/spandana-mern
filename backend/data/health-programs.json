@@ -1,0 +1,32 @@
+[
+  {
+    "id": "1",
+    "title": "Medical Aid Camp",
+    "description": "Free healthcare access, screenings, and preventative care for vulnerable families.",
+    "pillar": "physical",
+    "status": "active",
+    "image": "",
+    "published": true,
+    "order": 1
+  },
+  {
+    "id": "2",
+    "title": "Mental Health Awareness",
+    "description": "Breaking stigmas and normalising mental health conversations in everyday life.",
+    "pillar": "mental",
+    "status": "active",
+    "image": "",
+    "published": true,
+    "order": 2
+  },
+  {
+    "id": "3",
+    "title": "Skill Development",
+    "description": "Vocational training centers increasing employability and dignity.",
+    "pillar": "physical",
+    "status": "active",
+    "image": "",
+    "published": true,
+    "order": 3
+  }
+]

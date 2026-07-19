@@ -1,0 +1,39 @@
+[
+  {
+    "id": "mrr4gcmnxjt5q9bp4z",
+    "title": "Test Story",
+    "personName": "Asha",
+    "createdAt": "2026-07-19T01:33:21.263Z",
+    "updatedAt": "2026-07-19T01:33:21.264Z"
+  },
+  {
+    "id": "s1",
+    "title": "From Domestic Violence to Entrepreneur",
+    "excerpt": "Priya survived abuse and today runs a successful tailoring business, employing 4 women from her neighbourhood.",
+    "content": "<p>Priya (name changed) came to Spandana's Sahara centre in 2021 with two young children and nothing else. After immediate shelter and legal aid, she enrolled in our 3-month tailoring programme.</p><p>Today, Priya runs a tailoring unit from her home in Uppal, employs four other women from the community, and sends both her children to school. She is also a peer mentor for new women joining the Sahara programme.</p><p><em>\"Spandana didn't just save me — they gave me back my confidence.\"</em></p>",
+    "image": "",
+    "published": true,
+    "createdAt": "2026-07-14T01:05:50.821706Z",
+    "updatedAt": "2026-07-14T01:05:50.821706Z"
+  },
+  {
+    "id": "s2",
+    "title": "First-Generation Graduate",
+    "excerpt": "Raju from a daily-wage family is now an engineering graduate, thanks to Spandana's scholarship support.",
+    "content": "<p>Raju's father worked as a construction labourer. When Spandana's education volunteer spotted Raju's talent during a community literacy drive, we provided full scholarship support for his Class 11 and 12 studies.</p><p>Raju secured 92% in Intermediate and gained admission to JNTU Hyderabad for civil engineering. He graduated in 2024 and now works at an infrastructure firm, supporting his entire family.</p><p><em>\"I never thought college was possible for someone like me. Spandana showed me it was.\"</em></p>",
+    "image": "",
+    "published": true,
+    "createdAt": "2026-07-14T01:05:50.821706Z",
+    "updatedAt": "2026-07-14T01:05:50.821706Z"
+  },
+  {
+    "id": "s3",
+    "title": "A Grandmother's Second Chance at Health",
+    "excerpt": "Lakshmi, 68, received cataract surgery through Spandana's vision care camp — she can see her grandchildren clearly for the first time in years.",
+    "content": "<p>Lakshmi had been functionally blind in both eyes for over three years due to cataracts. Living alone in Malkajgiri, she could not afford the surgery and had no one to accompany her to a hospital.</p><p>During our door-to-door health survey, our volunteers identified Lakshmi and arranged her surgery at a partnered hospital — fully funded by Spandana donors. The surgery took 20 minutes.</p><p><em>\"I can see my grandchildren's faces again. I prayed for this.\"</em> — Lakshmi</p>",
+    "image": "",
+    "published": true,
+    "createdAt": "2026-07-14T01:05:50.821706Z",
+    "updatedAt": "2026-07-14T01:05:50.821706Z"
+  }
+]

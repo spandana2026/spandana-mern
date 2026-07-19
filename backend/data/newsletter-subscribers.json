@@ -1,0 +1,4 @@
+[
+  { "id": "n1", "email": "test@spandana.org", "active": true, "createdAt": "2026-07-14T01:05:50.821706Z", "updatedAt": "2026-07-14T01:05:50.821706Z" },
+  { "id": "n2", "email": "ipb777@gmail.com", "active": true, "createdAt": "2026-07-14T01:05:50.821706Z", "updatedAt": "2026-07-14T01:05:50.821706Z" }
+]

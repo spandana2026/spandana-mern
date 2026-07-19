@@ -1,0 +1,46 @@
+[
+  {
+    "id": "g1",
+    "title": "Annual Medical Camp 2024",
+    "caption": "Free health check-ups for 500+ community members at our Secunderabad camp.",
+    "imageUrl": "",
+    "category": "Medical",
+    "published": true,
+    "order": 1,
+    "createdAt": "2026-07-14T01:05:50.821706Z",
+    "updatedAt": "2026-07-14T01:05:50.821706Z"
+  },
+  {
+    "id": "g2",
+    "title": "Vocational Training \u2014 Tailoring Batch",
+    "caption": "30 women completed their tailoring certification and are now self-employed.",
+    "imageUrl": "",
+    "category": "Training",
+    "published": true,
+    "order": 2,
+    "createdAt": "2026-07-14T01:05:50.821706Z",
+    "updatedAt": "2026-07-14T01:05:50.821706Z"
+  },
+  {
+    "id": "g3",
+    "title": "Children's Day Celebration",
+    "caption": "400 children from underprivileged communities celebrated Children's Day with art, music, and gifts.",
+    "imageUrl": "",
+    "category": "Events",
+    "published": true,
+    "order": 3,
+    "createdAt": "2026-07-14T01:05:50.821706Z",
+    "updatedAt": "2026-07-14T01:05:50.821706Z"
+  },
+  {
+    "id": "g4",
+    "title": "Flood Relief \u2014 Sangareddy District",
+    "caption": "Emergency food kits and medicines distributed to 200 flood-affected families.",
+    "imageUrl": "",
+    "category": "Relief",
+    "published": true,
+    "order": 4,
+    "createdAt": "2026-07-14T01:05:50.821706Z",
+    "updatedAt": "2026-07-14T01:05:50.821706Z"
+  }
+]
