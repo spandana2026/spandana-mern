@@ -37,9 +37,15 @@ app.use(helmet({
 }));
 
 app.use(cors({ origin: env.CORS_ORIGINS, credentials: true }));
-app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 500, standardHeaders: true, legacyHeaders: false }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
+
+// Rate limiting: scoped to /api only, so static assets (JS/CSS/images) and
+// the SPA page itself are never rate-limited — only writes/reads against
+// the actual API count toward the budget. Also raised from 500 to 2000 per
+// window since a single page load can legitimately fire many API calls
+// (settings, posts, listings, ads, etc. all load in parallel).
+const apiLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 2000, standardHeaders: true, legacyHeaders: false });
 
 // Fix #13: request ID on every request
 app.use(requestId);
@@ -53,13 +59,13 @@ app.get('/api/health', (_req, res) => {
 });
 
 // Fix #19: all routes versioned under /api/v1
-app.use('/api/v1', v1Routes);
+app.use('/api/v1', apiLimiter, v1Routes);
 
 // Legacy compatibility alias — a large part of the frontend (older pages,
 // admin tabs) calls /api/... directly instead of /api/v1/.... Rather than
 // track down every call site, also serve the same v1 router at /api so
 // both forms work.
-app.use('/api', v1Routes);
+app.use('/api', apiLimiter, v1Routes);
 
 // Fix: serve the built React frontend (frontend/dist) from this same Node
 // process when it's present, so the whole app can be deployed as a single
