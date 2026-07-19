@@ -174,6 +174,80 @@ docker-compose up -d --build
 
 ---
 
+## Option D: Hostinger — GitHub Auto-Deploy (push-to-deploy, no zip uploads)
+
+**Requires** Hostinger Business Web Hosting or a Cloud plan (Cloud Startup/Professional/Enterprise) — Node.js Web Apps hosting is not available on entry-level shared plans.
+
+This repo is set up to deploy as **one single Node.js app**: `npm run build` builds
+the React frontend and installs backend dependencies, and `backend/server.js` now
+serves the built frontend (`frontend/dist`) itself alongside the API — so there's
+nothing to split across two hostings or configure with nginx.
+
+### Step 1 — Push this repo to GitHub
+```bash
+git init   # if not already a repo
+git add .
+git commit -m "Initial commit"
+git branch -M main
+git remote add origin https://github.com/<you>/<repo>.git
+git push -u origin main
+```
+Do **not** commit `backend/.env` (it should already be in `.gitignore`) — you'll set
+environment variables in hPanel instead, in Step 4.
+
+### Step 2 — Add the website in hPanel
+1. hPanel → **Websites** → **Add Website**
+2. Choose **Node.js Apps** → **Import Git Repository**
+3. Click **Continue with GitHub**, authorize Hostinger, and pick this repository
+
+### Step 3 — Build settings
+Hostinger will try to auto-detect the framework. Since this is a monorepo (frontend
++ backend in one repo), it will likely be detected as **"Other"** — set these manually:
+| Field | Value |
+|---|---|
+| Install command | `npm run install:all` |
+| Build command | `npm run build` |
+| Output directory | *(leave blank — this isn't a static-only app)* |
+| Entry file | `index.js` |
+
+If the build-settings screen offers a **Root directory** field, leave it blank/`.`
+(repo root) — the root `package.json`'s `build`/`start` scripts already know how to
+reach into `frontend/` and `backend/`.
+
+### Step 4 — Environment variables
+In the same setup screen (or afterwards under the app's **Environment Variables**
+tab), add at minimum:
+```
+ADMIN_PASSWORD=YourSecureAdminPassword
+SESSION_SECRET=your-64-char-random-secret
+NODE_ENV=production
+MONGO_URI=mongodb+srv://user:pass@cluster.mongodb.net/spandana   # optional — omit to use JSON file storage
+CORS_ORIGINS=https://yourdomain.com
+```
+(`PORT` is set automatically by Hostinger — don't override it.)
+
+### Step 5 — Deploy
+Click **Deploy**. Hostinger builds and starts the app, then gives you a live preview.
+
+### Step 6 — Auto-deploy on every push
+No extra setup needed — once connected via GitHub, Hostinger **automatically
+rebuilds and redeploys** the app on every push to the selected branch. Just:
+```bash
+git add .
+git commit -m "some change"
+git push
+```
+...and the live site updates on its own. You can watch build/deploy status and logs
+under the app's **Deployments** tab in hPanel.
+
+### Database
+For MongoDB, either use MongoDB Atlas (set `MONGO_URI` as above — see the
+Atlas setup section below) or use hPanel's built-in **Database Connect Wizard**
+under the Node.js app dashboard, which supports MongoDB Atlas and Supabase and
+wires up the environment variable for you automatically.
+
+---
+
 ## Environment Variables Reference
 
 These are the **actual** variable names read by `backend/config/env.js` — use these

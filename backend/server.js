@@ -61,6 +61,30 @@ app.use('/api/v1', v1Routes);
 // both forms work.
 app.use('/api', v1Routes);
 
+// Fix: serve the built React frontend (frontend/dist) from this same Node
+// process when it's present, so the whole app can be deployed as a single
+// Node.js app (e.g. on Hostinger's Node.js Web Apps hosting, which deploys
+// one GitHub-connected app per website). Local dev is unaffected — Vite's
+// own dev server keeps handling the frontend there and frontend/dist won't
+// exist until `npm run build` has been run.
+import fs from 'fs';
+const frontendDist = path.join(__dirname, '..', 'frontend', 'dist');
+if (fs.existsSync(frontendDist)) {
+  app.use(express.static(frontendDist));
+}
+
+app.use((req, res, next) => {
+  // Anything under /api/* that reached here is a genuinely unmatched API route.
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ error: 'Route not found. See /api/v1/docs for available routes.' });
+  }
+  // Everything else falls back to the SPA's index.html (client-side routing),
+  // if a build is present. Otherwise fall through to the JSON 404 below.
+  const indexHtml = path.join(frontendDist, 'index.html');
+  if (fs.existsSync(indexHtml)) return res.sendFile(indexHtml);
+  next();
+});
+
 app.use((_req, res) => res.status(404).json({ error: 'Route not found. See /api/v1/docs for available routes.' }));
 app.use(errorHandler);
 
