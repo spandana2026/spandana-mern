@@ -102,6 +102,7 @@ async function start() {
   });
 
   // Fix #14: graceful shutdown — finish in-flight requests before exiting
+ 
   function shutdown(signal) {
     console.info(`[server] ${signal} received — shutting down gracefully`);
     server.close(() => {

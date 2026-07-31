@@ -41,6 +41,30 @@ interface LiveSettings {
   title?: string;
 }
 
+// Cache the last-known /api/settings response so the navbar can hydrate
+// instantly on the very next load/reload instead of starting from a blank
+// {} state. Without this, hidden admin links briefly fall back to
+// DEFAULT_LINKS (all visible) until the network request resolves, which is
+// the "hidden link flashes then disappears" glitch.
+const NAV_CACHE_KEY = "spandana:nav-settings-cache";
+
+function readNavCache(): any {
+  try {
+    const raw = localStorage.getItem(NAV_CACHE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeNavCache(d: any) {
+  try {
+    localStorage.setItem(NAV_CACHE_KEY, JSON.stringify(d));
+  } catch {
+    // ignore (private browsing / storage disabled)
+  }
+}
+
 export default function Nav() {
   const [open, setOpen] = useState(false);
   const [programsOpen, setProgramsOpen] = useState(false);
@@ -48,12 +72,13 @@ export default function Nav() {
   const [location] = useLocation();
   const { level, paperWhite, setTo, togglePaper } = useFontSize();
   const isHome = location === "/";
-  const [navSettings, setNavSettings] = useState<NavSettings>({});
-  const [liveSettings, setLiveSettings] = useState<LiveSettings>({});
-  const [logoUrl, setLogoUrl] = useState("/logo.png");
-  const [logoScale, setLogoScale] = useState(1);
-  const [logoPosition, setLogoPosition] = useState<"left" | "center" | "right">("left");
-  const [pageVisibility, setPageVisibility] = useState<Record<string, boolean>>({});
+  const cachedSettings = useRef<any>(readNavCache());
+  const [navSettings, setNavSettings] = useState<NavSettings>(cachedSettings.current?.nav ?? {});
+  const [liveSettings, setLiveSettings] = useState<LiveSettings>(cachedSettings.current?.liveStream ?? {});
+  const [logoUrl, setLogoUrl] = useState(cachedSettings.current?.branding?.logoUrl || "/logo.png");
+  const [logoScale, setLogoScale] = useState(parseFloat(cachedSettings.current?.branding?.logoScale) || 1);
+  const [logoPosition, setLogoPosition] = useState<"left" | "center" | "right">(cachedSettings.current?.branding?.logoPosition ?? "left");
+  const [pageVisibility, setPageVisibility] = useState<Record<string, boolean>>(cachedSettings.current?.visibility ?? {});
   const dropdownRef = useRef<HTMLDivElement>(null);
   const hoverTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -67,6 +92,9 @@ export default function Nav() {
         if (d?.branding?.logoScale) setLogoScale(parseFloat(d.branding.logoScale) || 1);
         if (d?.branding?.logoPosition) setLogoPosition(d.branding.logoPosition);
         if (d?.visibility) setPageVisibility(d.visibility);
+        // Refresh the cache so the *next* load/reload starts from this
+        // known-good state instead of defaults.
+        writeNavCache(d);
       })
       .catch(() => {});
   }, []);
