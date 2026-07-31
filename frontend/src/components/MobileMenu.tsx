@@ -2,18 +2,10 @@ import React, { useState } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import {
-  Heart, ShoppingBag, HeartHandshake, BookOpen,
+  Heart, ShoppingBag, HeartHandshake,
   ChevronDown, Shield, Brain, Gamepad2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useFontSize, type FontSizeLevel } from "@/hooks/use-font-size";
-
-const FONT_LEVELS: { level: FontSizeLevel; textClass: string; label?: string; title: string }[] = [
-  { level: 0, textClass: "text-xs",   label: "Normal",  title: "Normal text size"  },
-  { level: 1, textClass: "text-sm",                     title: "Large text size"   },
-  { level: 2, textClass: "text-base",                   title: "X-Large text size" },
-  { level: 3, textClass: "text-xl",   label: "Elderly", title: "Elderly text size" },
-];
 
 const PROGRAMS_DROPDOWN = [
   { label: "Physical Health", href: "/programs/physical-health", icon: Shield, desc: "Medical, skills & economic" },
@@ -41,7 +33,6 @@ export default function MobileMenu({
   pageVisibility,
   onClose,
 }: Props) {
-  const { level, paperWhite, setTo, togglePaper } = useFontSize();
   const [mobilePrograms, setMobilePrograms] = useState(false);
 
   const showDonate      = pageVisibility.pageDonate      !== false;
@@ -180,52 +171,6 @@ export default function MobileMenu({
             )}
           </div>
 
-          {/* Accessibility */}
-          <div className="pt-3 border-t border-border flex flex-col gap-3">
-            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Text Size</p>
-            <div className="flex items-center gap-2">
-              {FONT_LEVELS.map((fl) => (
-                <motion.button
-                  key={fl.level}
-                  onClick={() => setTo(fl.level)}
-                  whileTap={{ scale: 0.88 }}
-                  title={fl.title}
-                  aria-label={fl.title}
-                  className={`flex-1 h-10 rounded-xl font-bold transition-all flex items-center justify-center gap-1 border
-                    ${level === fl.level
-                      ? "bg-primary text-white border-primary shadow-sm"
-                      : "text-muted-foreground border-border hover:border-primary/50"}`}
-                >
-                  <span className={fl.textClass}>A</span>
-                  {fl.label && (
-                    <span className="text-[9px] font-semibold tracking-wide leading-none">
-                      {fl.label}
-                    </span>
-                  )}
-                </motion.button>
-              ))}
-            </div>
-            <button
-              onClick={togglePaper}
-              aria-label={paperWhite ? "Disable paper white mode" : "Enable paper white mode"}
-              className={`flex items-center gap-3 px-4 h-10 rounded-xl border text-sm font-semibold transition-all duration-300
-                ${paperWhite
-                  ? "bg-amber-50 border-amber-300 text-amber-800"
-                  : "border-border text-muted-foreground hover:border-primary/30"}`}
-            >
-              <BookOpen size={15} />
-              <span>Paper White</span>
-              <span
-                className={`ml-auto w-8 h-5 rounded-full transition-colors flex items-center px-0.5
-                  ${paperWhite ? "bg-amber-500" : "bg-muted"}`}
-              >
-                <span
-                  className={`w-4 h-4 rounded-full bg-white shadow transition-transform duration-300
-                    ${paperWhite ? "translate-x-3" : "translate-x-0"}`}
-                />
-              </span>
-            </button>
-          </div>
         </motion.div>
       )}
     </AnimatePresence>
