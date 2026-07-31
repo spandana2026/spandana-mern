@@ -161,7 +161,7 @@ export default function Nav() {
               window.scrollTo({ top: 0, behavior: "smooth" });
             }
           }}
-          className={`flex items-center shrink-0 w-[110px] h-12 sm:w-[140px] sm:h-16 md:w-[190px] md:h-20 opacity-90 hover:opacity-100 transition-opacity cursor-pointer ${logoPosition === "center" ? "absolute left-1/2 -translate-x-1/2" : ""} ${logoPosition === "right" ? "justify-end" : "justify-start"}`}
+          className={`flex items-center shrink-0 w-[90px] h-11 sm:w-[140px] sm:h-16 md:w-[190px] md:h-20 opacity-90 hover:opacity-100 transition-opacity cursor-pointer ${logoPosition === "center" ? "absolute left-1/2 -translate-x-1/2" : ""} ${logoPosition === "right" ? "justify-end" : "justify-start"}`}
         >
           <img
             src={logoUrl}
@@ -303,12 +303,12 @@ export default function Nav() {
       </div>
 
       {/* ── Mobile CTAs ── */}
-      <div className="md:hidden flex items-center gap-2 xs:gap-3 ml-auto mr-2">
+      <div className="md:hidden flex items-center gap-1.5 xs:gap-2.5 ml-auto mr-2 overflow-hidden">
         {/* LIVE button — mobile */}
         {liveSettings.enabled && (
           <Link
             href="/live"
-            className="flex flex-col items-center justify-center gap-0.5"
+            className="flex flex-col items-center justify-center gap-0.5 shrink-0"
             aria-label="Watch Live"
           >
             <span className="flex items-center gap-1 bg-red-500 text-white text-[9px] font-bold px-2 py-1 rounded-full animate-pulse shadow-sm">
@@ -318,39 +318,33 @@ export default function Nav() {
           </Link>
         )}
         {showDonate && (
-        <Link href="/donate" className="flex flex-col items-center justify-center gap-0.5 text-primary hover:text-primary/80 transition-colors" aria-label={donateLabel}>
-          <Heart size={22} strokeWidth={2} />
-          <span className="text-[10px] font-bold tracking-wide leading-none">{donateLabel}</span>
+        <Link href="/donate" className="flex flex-col items-center justify-center gap-0.5 shrink-0 text-primary hover:text-primary/80 transition-colors" aria-label={donateLabel}>
+          <Heart size={20} strokeWidth={2} />
+          <span className="text-[9px] font-bold tracking-wide leading-none whitespace-nowrap">{donateLabel}</span>
         </Link>
         )}
         {showGetInvolved && (
-        <Link href="/volunteer" className="hidden sm:flex flex-col items-center justify-center gap-0.5 text-primary hover:text-primary/80 transition-colors" aria-label={getInvolvedLabel}>
-          <HeartHandshake size={22} strokeWidth={2} />
-          <span className="text-[10px] font-bold tracking-wide leading-none">Volunteer</span>
-        </Link>
-        )}
-        {pageVisibility.pageFunZone !== false && (
-        <Link href="/fun-zone" className="hidden sm:flex flex-col items-center justify-center gap-0.5 text-primary hover:text-primary/80 transition-colors" aria-label="Joy Zone">
-          <Gamepad2 size={22} strokeWidth={2} />
-          <span className="text-[10px] font-bold tracking-wide leading-none">Joy Zone</span>
+        <Link href="/volunteer" className="flex flex-col items-center justify-center gap-0.5 shrink-0 text-primary hover:text-primary/80 transition-colors" aria-label={getInvolvedLabel}>
+          <HeartHandshake size={20} strokeWidth={2} />
+          <span className="text-[9px] font-bold tracking-wide leading-none whitespace-nowrap">{getInvolvedLabel}</span>
         </Link>
         )}
         {showShop && (shopUrl ? (
-          <a href={shopUrl} target="_blank" rel="noopener noreferrer" className="hidden sm:flex flex-col items-center justify-center gap-0.5 text-primary hover:text-primary/80 transition-colors" aria-label={shopLabel}>
-            <ShoppingBag size={22} strokeWidth={2} />
-            <span className="text-[10px] font-bold tracking-wide leading-none">{shopLabel}</span>
+          <a href={shopUrl} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center justify-center gap-0.5 shrink-0 text-primary hover:text-primary/80 transition-colors" aria-label={shopLabel}>
+            <ShoppingBag size={20} strokeWidth={2} />
+            <span className="text-[9px] font-bold tracking-wide leading-none whitespace-nowrap">{shopLabel}</span>
           </a>
         ) : (
-          <Link href="https://neenasgifts.store/" className="hidden sm:flex flex-col items-center justify-center gap-0.5 text-primary hover:text-primary/80 transition-colors" aria-label={shopLabel}>
-            <ShoppingBag size={22} strokeWidth={2} />
-            <span className="text-[10px] font-bold tracking-wide leading-none">{shopLabel}</span>
+          <Link href="https://neenasgifts.store/" className="flex flex-col items-center justify-center gap-0.5 shrink-0 text-primary hover:text-primary/80 transition-colors" aria-label={shopLabel}>
+            <ShoppingBag size={20} strokeWidth={2} />
+            <span className="text-[9px] font-bold tracking-wide leading-none whitespace-nowrap">{shopLabel}</span>
           </Link>
         ))}
       </div>
 
       {/* ── Mobile hamburger ── */}
       <button
-        className="md:hidden shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-primary text-white shadow-sm hover:bg-primary/90 transition-colors"
+        className="md:hidden shrink-0 flex items-center justify-center w-9 h-9 rounded-full bg-primary text-white shadow-sm hover:bg-primary/90 transition-colors ml-1.5"
         onClick={() => {
           const next = !open;
           setOpen(next);
@@ -358,7 +352,7 @@ export default function Nav() {
         }}
         aria-label="Toggle menu"
       >
-        {open ? <X size={20} /> : <Menu size={20} />}
+        {open ? <X size={18} /> : <Menu size={18} />}
       </button>
 
       </div>{/* end Row 1 */}
