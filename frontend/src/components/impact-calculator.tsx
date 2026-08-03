@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, Stethoscope, BookOpen, Heart, Users, Sprout } from "lucide-react";
+import { ArrowRight, Stethoscope, BookOpen, HeartHandshake, Users, Utensils } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 
@@ -13,15 +13,15 @@ const COLOR_MAP: Record<string, { gradient: string; bg: string; border: string }
 };
 
 const PROG_COLORS = ["emerald", "blue", "pink", "amber", "purple"];
-const PROG_ICONS  = [Sprout, BookOpen, Stethoscope, Heart, Users];
-const PROG_TAGS   = ["", "Most popular", "", "Max impact", "Legacy"] as const;
+const PROG_ICONS  = [Stethoscope, BookOpen, HeartHandshake, Users, Utensils];
+const PROG_TAGS   = ["", "Most popular", "", "", "Max impact"] as const;
 
 const DEFAULT_PROGRAMS = [
-  { icon: "🌱", name: "Plant a Tree",        desc: "Native tree planted in your name",                     inr: [50,  100, 250]  as [number,number,number], usd: [1,  3,  5]  as [number,number,number] },
-  { icon: "📚", name: "Sponsor a Child",      desc: "Books, uniform & tuition for one month",               inr: [500, 1000,2000] as [number,number,number], usd: [6,  12, 25] as [number,number,number] },
-  { icon: "🏥", name: "Medical Consultation", desc: "Free checkup & medicines for one patient",             inr: [500, 1000,2500] as [number,number,number], usd: [6,  15, 30] as [number,number,number] },
-  { icon: "🍱", name: "Feed a Family",        desc: "Nutritious meals for a week",                          inr: [200, 500, 1000] as [number,number,number], usd: [3,  6,  12] as [number,number,number] },
-  { icon: "💧", name: "Clean Water Access",   desc: "Water purification support for a household",           inr: [1000,2500,5000] as [number,number,number], usd: [12, 30, 60] as [number,number,number] },
+  { icon: "🏥", name: "Medical Consultation",              desc: "Covers a complete primary checkup, diagnostic tests, medicines, and transport for one patient.",                         inr: [1500,1500,1500] as [number,number,number], usd: [18, 18, 18] as [number,number,number] },
+  { icon: "📚", name: "Education & Child Empowerment",     desc: "Funds monthly tuition, remedial classes, and after-school academic support for one child.",                              inr: [2000,2000,2000] as [number,number,number], usd: [24, 24, 24] as [number,number,number] },
+  { icon: "⚖️", name: "Mental Health & Legal Advocacy",     desc: "Sponsoring professional counseling, vital legal aid for vulnerable women facing violence, and support groups.",           inr: [2500,2500,2500] as [number,number,number], usd: [30, 30, 30] as [number,number,number] },
+  { icon: "👵", name: "Elderly Care & Single Parents",      desc: "Covers medical care, nutrition, and everyday essentials for isolated seniors and single parents.",                        inr: [3000,3000,3000] as [number,number,number], usd: [36, 36, 36] as [number,number,number] },
+  { icon: "🍲", name: "Community Nutrition & Food Relief",  desc: "Funds wholesome hot meals and monthly dry ration kits for families in brick kilns and ragpicker communities.",            inr: [5000,5000,5000] as [number,number,number], usd: [60, 60, 60] as [number,number,number] },
 ];
 
 const DEFAULT_HEADING        = "See what your donation";
@@ -37,7 +37,6 @@ export default function ImpactCalculator() {
   const [cfg, setCfg]                     = useState<ImpactSection>({});
   const [programs, setPrograms]           = useState<Program[]>(DEFAULT_PROGRAMS);
   const [donorType, setDonorType]         = useState<"indian" | "intl">("indian");
-  const [geoDetected, setGeoDetected]     = useState(false);
   const [settingsLoaded, setSettingsLoaded] = useState(false);
 
   useEffect(() => {
@@ -58,7 +57,6 @@ export default function ImpactCalculator() {
       .then((d) => {
         if (d?.country_code && d.country_code !== "IN") {
           setDonorType("intl");
-          setGeoDetected(true);
         }
       })
       .catch(() => {});
@@ -89,28 +87,12 @@ export default function ImpactCalculator() {
           viewport={{ once: true }} transition={{ duration: 0.7 }}
           className="text-center mb-10"
         >
-          {/* Badge + toggle */}
+          {/* Badge */}
           <div className="flex items-center justify-center gap-3 flex-wrap mb-4">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/8 text-primary text-xs font-bold uppercase tracking-widest">
               Your Impact
             </div>
-            <div className="flex bg-muted rounded-full p-0.5 gap-0.5">
-              <button
-                onClick={() => { setDonorType("indian"); setSelected(0); }}
-                className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${donorType === "indian" ? "bg-white text-foreground shadow-sm dark:bg-card" : "text-muted-foreground hover:text-foreground"}`}
-              >🇮🇳 India</button>
-              <button
-                onClick={() => { setDonorType("intl"); setSelected(0); }}
-                className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${donorType === "intl" ? "bg-white text-foreground shadow-sm dark:bg-card" : "text-muted-foreground hover:text-foreground"}`}
-              >🌍 International</button>
-            </div>
           </div>
-
-          {geoDetected && (
-            <p className="text-[10px] text-muted-foreground mb-3">
-              📍 International view based on your location
-            </p>
-          )}
 
           <h2 className="text-3xl md:text-5xl font-serif font-medium">
             {heading} <span className="italic text-muted-foreground">{italic}</span>

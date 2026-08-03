@@ -175,11 +175,11 @@ export default function DonateTab({ settings, updateSettings, setSettings, token
                 </p>
                 {(() => {
                   const DEFAULT_P = [
-                    { icon: "🌱", name: "Plant a Tree",        desc: "Native tree planted in your name",               inr: [50,  100,  250],  usd: [1,  3,  5]  },
-                    { icon: "📚", name: "Sponsor a Child",      desc: "Books, uniform & tuition for one month",         inr: [500, 1000, 2000], usd: [6,  12, 25] },
-                    { icon: "🏥", name: "Medical Consultation", desc: "Free checkup & medicines for one patient",       inr: [500, 1000, 2500], usd: [6,  15, 30] },
-                    { icon: "🍱", name: "Feed a Family",        desc: "Nutritious meals for a week",                    inr: [200, 500,  1000], usd: [3,  6,  12] },
-                    { icon: "💧", name: "Clean Water Access",   desc: "Water purification support for a household",     inr: [1000,2500, 5000], usd: [12, 30, 60] },
+                    { icon: "🏥", name: "Medical Consultation",             desc: "Covers a complete primary checkup, diagnostic tests, medicines, and transport for one patient.",                       inr: [1500,1500,1500], usd: [18, 18, 18] },
+                    { icon: "📚", name: "Education & Child Empowerment",    desc: "Funds monthly tuition, remedial classes, and after-school academic support for one child.",                            inr: [2000,2000,2000], usd: [24, 24, 24] },
+                    { icon: "⚖️", name: "Mental Health & Legal Advocacy",   desc: "Sponsoring professional counseling, vital legal aid for vulnerable women facing violence, and support groups.",         inr: [2500,2500,2500], usd: [30, 30, 30] },
+                    { icon: "👵", name: "Elderly Care & Single Parents",    desc: "Covers medical care, nutrition, and everyday essentials for isolated seniors and single parents.",                      inr: [3000,3000,3000], usd: [36, 36, 36] },
+                    { icon: "🍲", name: "Community Nutrition & Food Relief",desc: "Funds wholesome hot meals and monthly dry ration kits for families in brick kilns and ragpicker communities.",           inr: [5000,5000,5000], usd: [60, 60, 60] },
                   ];
                   const progs: Array<{ icon: string; name: string; desc: string; inr: number[]; usd: number[] }> =
                     (settings.donatePage?.programs ?? DEFAULT_P) as Array<{ icon: string; name: string; desc: string; inr: number[]; usd: number[] }>;
@@ -274,4 +274,3 @@ export default function DonateTab({ settings, updateSettings, setSettings, token
             </div>
   );
 }
-
