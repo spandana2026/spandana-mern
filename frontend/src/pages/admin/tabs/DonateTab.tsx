@@ -153,17 +153,17 @@ export default function DonateTab({ settings, updateSettings, setSettings, token
                 ].map(({ key, showKey, linkKey, ph, desc }) => (
                   <div key={key} className="mb-3 rounded-xl border border-border bg-muted/20 overflow-hidden">
                     <div className="flex items-center gap-3 px-3 py-2.5">
-                      <Switch checked={(settings as Record<string, unknown>)[showKey] === true} onCheckedChange={(v) => updateSettings([showKey], v)} />
+                      <Switch checked={(settings[showKey as keyof SiteSettings] as boolean | undefined) === true} onCheckedChange={(v) => updateSettings([showKey], v)} />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium leading-none">{key}</p>
                         <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{desc}</p>
                       </div>
-                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${(settings as Record<string, unknown>)[showKey] ? "bg-green-100 text-green-700" : "bg-muted text-muted-foreground"}`}>
-                        {(settings as Record<string, unknown>)[showKey] ? "ON" : "OFF"}
+                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${settings[showKey as keyof SiteSettings] ? "bg-green-100 text-green-700" : "bg-muted text-muted-foreground"}`}>
+                        {settings[showKey as keyof SiteSettings] ? "ON" : "OFF"}
                       </span>
                     </div>
                     <div className="px-3 pb-3 border-t border-border/50">
-                      <Input className="mt-2 text-xs" value={(settings as Record<string, unknown>)[linkKey] as string | undefined ?? ""} onChange={(e) => updateSettings([linkKey], e.target.value)} placeholder={ph} />
+                      <Input className="mt-2 text-xs" value={(settings[linkKey as keyof SiteSettings] as string | undefined) ?? ""} onChange={(e) => updateSettings([linkKey], e.target.value)} placeholder={ph} />
                     </div>
                   </div>
                 ))}

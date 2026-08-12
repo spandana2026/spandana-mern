@@ -19,6 +19,7 @@ interface DonateSettings {
   bankName?: string; bankAccountName?: string; bankAccountNumber?: string;
   bankIfsc?: string; bankBranch?: string;
   razorpayLink?: string; paypalLink?: string; stripeLink?: string; cashfreeLink?: string;
+  showRazorpay?: boolean; showCashfree?: boolean; showPaypal?: boolean; showStripe?: boolean;
   donatePage?: {
     heading?: string; subheading?: string; taxNote?: string;
     headingMobile?: string; subheadingMobile?: string;
@@ -165,8 +166,8 @@ export default function DonatePage() {
       .then((d) => {
         if (d?.country_code && d.country_code !== "IN") {
           setDonorType("intl");
-          setGeoDetected(true);
         }
+        setGeoDetected(true);
       })
       .catch(() => {});
   }, [settingsLoaded]);
@@ -217,15 +218,12 @@ export default function DonatePage() {
   const indianTabLabel = settings.donatePage?.indianTabLabel || "🇮🇳 Indian Donor";
   const intlTabLabel   = settings.donatePage?.intlTabLabel   || "🌍 International / NRI";
   const hasBank  = settings.bankAccountNumber || settings.bankIfsc;
-  const hasIntl  = settings.razorpayLink || settings.paypalLink || settings.stripeLink;
+  const hasIntl  = (settings.showRazorpay && settings.razorpayLink) || (settings.showCashfree && settings.cashfreeLink) || (settings.showPaypal && settings.paypalLink) || (settings.showStripe && settings.stripeLink);
   const fcraEnabled = settings.donatePage?.fcraEnabled !== false;
 
   const upiApps = settings.donatePage?.upiApps ?? {};
   const visibleAppButtons = APP_BUTTONS.filter(b => upiApps[b.app] !== false);
 
-  const switchTab = (type: "indian" | "intl") => {
-    setDonorType(type); setTierIdx(null); setCustom("");
-  };
   const changeProg = (i: number) => {
     setProgramIdx(i); setTierIdx(null); setCustom("");
   };
@@ -260,23 +258,14 @@ export default function DonatePage() {
           <p className="text-white/70 text-xs md:text-sm mb-5 max-w-xs mx-auto leading-relaxed"
             dangerouslySetInnerHTML={{ __html: safeHtml(subhead) }} />
 
-          <div className="flex bg-white/10 rounded-xl p-1 gap-1 max-w-xs mx-auto">
-            <button
-              onClick={() => switchTab("indian")}
-              className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${donorType === "indian" ? "bg-white text-violet-700 shadow-sm" : "text-white/70 hover:text-white"}`}
-            >
-              {indianTabLabel}
-            </button>
-            <button
-              onClick={() => switchTab("intl")}
-              className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${donorType === "intl" ? "bg-white text-violet-700 shadow-sm" : "text-white/70 hover:text-white"}`}
-            >
-              {intlTabLabel}
-            </button>
+          <div className="flex justify-center">
+            <span className="inline-flex items-center gap-1.5 bg-white/10 border border-white/15 rounded-full px-4 py-2 text-xs font-bold text-white">
+              {donorType === "indian" ? indianTabLabel : intlTabLabel}
+            </span>
           </div>
           {geoDetected && (
             <p className="text-center text-white/50 text-[10px] mt-2">
-              📍 International tab selected based on your location
+              📍 Detected automatically based on your location
             </p>
           )}
         </motion.div>
@@ -567,7 +556,7 @@ export default function DonatePage() {
                 </div>
                 {hasIntl ? (
                   <div className="p-4 space-y-2">
-                    {settings.razorpayLink && (
+                    {settings.showRazorpay && settings.razorpayLink && (
                       <a href={settings.razorpayLink} target="_blank" rel="noopener noreferrer"
                         className="flex items-center justify-between bg-[#072654] text-white rounded-xl px-4 py-3 hover:bg-[#0d3980] transition-colors">
                         <div>
@@ -577,7 +566,17 @@ export default function DonatePage() {
                         <ArrowRight size={14} />
                       </a>
                     )}
-                    {settings.paypalLink && (
+                    {settings.showCashfree && settings.cashfreeLink && (
+                      <a href={settings.cashfreeLink} target="_blank" rel="noopener noreferrer"
+                        className="flex items-center justify-between bg-[#1a56db] text-white rounded-xl px-4 py-3 hover:bg-[#1548c4] transition-colors">
+                        <div>
+                          <p className="font-semibold text-sm">Cashfree</p>
+                          <p className="text-white/60 text-[10px]">Cards · UPI · Net banking</p>
+                        </div>
+                        <ArrowRight size={14} />
+                      </a>
+                    )}
+                    {settings.showPaypal && settings.paypalLink && (
                       <a href={settings.paypalLink} target="_blank" rel="noopener noreferrer"
                         className="flex items-center justify-between bg-[#003087] text-white rounded-xl px-4 py-3 hover:bg-[#00256b] transition-colors">
                         <div>
@@ -587,7 +586,7 @@ export default function DonatePage() {
                         <ArrowRight size={14} />
                       </a>
                     )}
-                    {settings.stripeLink && (
+                    {settings.showStripe && settings.stripeLink && (
                       <a href={settings.stripeLink} target="_blank" rel="noopener noreferrer"
                         className="flex items-center justify-between bg-[#635bff] text-white rounded-xl px-4 py-3 hover:bg-[#4f48d9] transition-colors">
                         <div>

@@ -99,23 +99,6 @@ export default function VisionPage() {
             }}
           />
           <motion.div
-            className="absolute top-12 left-16 text-[180px] font-serif text-white/[0.04] select-none leading-none pointer-events-none"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1.5 }}
-          >
-            V
-          </motion.div>
-          <motion.div
-            className="absolute bottom-8 right-16 text-[140px] font-serif text-white/[0.04] select-none leading-none pointer-events-none"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1.5, delay: 0.3 }}
-          >
-            M
-          </motion.div>
-
-          <motion.div
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}

@@ -116,6 +116,8 @@ export interface SiteSettings {
   volunteerSpotlight?: VolunteerSpotlightConfig;
   donatePage?: DonatePageConfig;
   upiId?: string; upiName?: string; upiQrUrl?: string;
+  razorpayLink?: string; paypalLink?: string; stripeLink?: string; cashfreeLink?: string;
+  showRazorpay?: boolean; showCashfree?: boolean; showPaypal?: boolean; showStripe?: boolean;
   bankAccountName?: string; bankAccountNumber?: string; bankIfsc?: string; bankName?: string; bankBranch?: string;
   whatsappGroupLink?: string; whatsappGroupName?: string;
   floating_menu?: FloatingMenuConfig;
