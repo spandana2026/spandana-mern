@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link } from "wouter";
 import RichTextEditor from "@/components/admin/RichTextEditor";
-import { Mail, Phone, MapPin, Instagram, Youtube, Facebook, Twitter, ArrowUpRight, Eye } from "lucide-react";
+import { Mail, Phone, MapPin, Instagram, Youtube, Facebook, Twitter, Eye } from "lucide-react";
 
 const SOCIAL_ICONS: Record<string, React.ElementType> = {
   Instagram, YouTube: Youtube, Facebook, Twitter, "Twitter / X": Twitter,
@@ -188,9 +188,6 @@ export default function Footer() {
           <div className="flex items-center gap-3 text-[10px] text-white/25 shrink-0">
             <Link href="/privacy" className="hover:text-white/60">Privacy</Link>
             <Link href="/terms" className="hover:text-white/60">Terms</Link>
-            <Link href="/admin" className="hover:text-white/60 inline-flex items-center gap-0.5">
-              Admin <ArrowUpRight size={8} />
-            </Link>
           </div>
         </div>
 
@@ -309,9 +306,6 @@ export default function Footer() {
           <div className="flex items-center gap-5 text-[11px] text-white/25">
             <Link href="/privacy" className="hover:text-white/60 transition-colors">Privacy Policy</Link>
             <Link href="/terms" className="hover:text-white/60 transition-colors">Terms of Use</Link>
-            <Link href="/admin" className="hover:text-white/60 transition-colors inline-flex items-center gap-1">
-              Admin <ArrowUpRight size={9} />
-            </Link>
           </div>
         </div>
       </div>

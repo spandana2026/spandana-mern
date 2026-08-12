@@ -1,7 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import {
-  Menu, X, Heart, ShoppingBag, HeartHandshake, BookOpen,
+  Menu, X, Home, Heart, ShoppingBag, HeartHandshake, BookOpen,
   ChevronDown, Shield, Brain, Radio, Gamepad2,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
@@ -112,7 +112,7 @@ export default function Nav() {
     "/sahara": "pageSahara",
     "/#vision": "pageVision",
     "/vision": "pageVision",
-    "/volunteer": "pageGetInvolved",
+    "/join-us": "pageGetInvolved",
     "/donate": "pageDonate",
     "/shop": "pageShop",
   };
@@ -256,8 +256,8 @@ export default function Nav() {
 
         {showGetInvolved && (
         <Button asChild size="default" className="rounded-full px-5 gap-1.5">
-          <Link href="/volunteer">
-            <HeartHandshake size={15} />
+          <Link href="/join-us">
+            <HeartHandshake size={18} />
             {getInvolvedLabel}
           </Link>
         </Button>
@@ -277,10 +277,16 @@ export default function Nav() {
 
       {/* ── Desktop CTA ── */}
       <div className="hidden md:flex items-center gap-3">
+        <Button asChild size="default" className="rounded-full px-4 gap-1.5 bg-primary text-white hover:bg-primary/90">
+          <Link href="/">
+            <Home size={18} />
+            Home
+          </Link>
+        </Button>
         {showDonate && (
         <Button asChild variant="outline" size="default" className="rounded-full border-primary text-primary hover:bg-primary/5 gap-1.5">
           <Link href="/donate">
-            <Heart size={15} />
+            <Heart size={18} />
             {donateLabel}
           </Link>
         </Button>
@@ -289,12 +295,12 @@ export default function Nav() {
         <Button asChild size="default" className="rounded-full px-5 gap-1.5">
           {shopUrl ? (
             <a href={shopUrl} target="_blank" rel="noopener noreferrer">
-              <ShoppingBag size={15} />
+              <ShoppingBag size={18} />
               {shopLabel}
             </a>
           ) : (
             <Link href="/shop">
-              <ShoppingBag size={15} />
+              <ShoppingBag size={18} />
               {shopLabel}
             </Link>
           )}
@@ -317,27 +323,31 @@ export default function Nav() {
             </span>
           </Link>
         )}
+        <Link href="/" className="flex flex-col items-center justify-center gap-0.5 shrink-0 text-primary hover:text-primary/80 transition-colors" aria-label="Home">
+          <Home size={22} strokeWidth={2} />
+          <span className="text-[10px] font-bold tracking-wide leading-none whitespace-nowrap">Home</span>
+        </Link>
         {showDonate && (
         <Link href="/donate" className="flex flex-col items-center justify-center gap-0.5 shrink-0 text-primary hover:text-primary/80 transition-colors" aria-label={donateLabel}>
-          <Heart size={20} strokeWidth={2} />
-          <span className="text-[9px] font-bold tracking-wide leading-none whitespace-nowrap">{donateLabel}</span>
+          <Heart size={22} strokeWidth={2} />
+          <span className="text-[10px] font-bold tracking-wide leading-none whitespace-nowrap">{donateLabel}</span>
         </Link>
         )}
         {showGetInvolved && (
-        <Link href="/volunteer" className="flex flex-col items-center justify-center gap-0.5 shrink-0 text-primary hover:text-primary/80 transition-colors" aria-label={getInvolvedLabel}>
-          <HeartHandshake size={20} strokeWidth={2} />
-          <span className="text-[9px] font-bold tracking-wide leading-none whitespace-nowrap">{getInvolvedLabel}</span>
+        <Link href="/join-us" className="flex flex-col items-center justify-center gap-0.5 shrink-0 text-primary hover:text-primary/80 transition-colors" aria-label={getInvolvedLabel}>
+          <HeartHandshake size={22} strokeWidth={2} />
+          <span className="text-[10px] font-bold tracking-wide leading-none whitespace-nowrap">{getInvolvedLabel}</span>
         </Link>
         )}
         {showShop && (shopUrl ? (
           <a href={shopUrl} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center justify-center gap-0.5 shrink-0 text-primary hover:text-primary/80 transition-colors" aria-label={shopLabel}>
-            <ShoppingBag size={20} strokeWidth={2} />
-            <span className="text-[9px] font-bold tracking-wide leading-none whitespace-nowrap">{shopLabel}</span>
+            <ShoppingBag size={22} strokeWidth={2} />
+            <span className="text-[10px] font-bold tracking-wide leading-none whitespace-nowrap">{shopLabel}</span>
           </a>
         ) : (
           <Link href="https://neenasgifts.store/" className="flex flex-col items-center justify-center gap-0.5 shrink-0 text-primary hover:text-primary/80 transition-colors" aria-label={shopLabel}>
-            <ShoppingBag size={20} strokeWidth={2} />
-            <span className="text-[9px] font-bold tracking-wide leading-none whitespace-nowrap">{shopLabel}</span>
+            <ShoppingBag size={22} strokeWidth={2} />
+            <span className="text-[10px] font-bold tracking-wide leading-none whitespace-nowrap">{shopLabel}</span>
           </Link>
         ))}
       </div>
@@ -457,7 +467,7 @@ export default function Nav() {
               </Button>
               )}
               <Button asChild className="w-full rounded-full gap-1.5">
-                <Link href="/volunteer" onClick={() => setOpen(false)}>
+                <Link href="/join-us" onClick={() => setOpen(false)}>
                   <HeartHandshake size={14} />
                   {getInvolvedLabel}
                 </Link>

@@ -82,7 +82,7 @@ export default function VolunteerSpotlight({ volunteers = DEFAULT_VOLUNTEERS, on
             ) : (
               <Button asChild size="lg"
                 className="rounded-full h-11 px-7 font-semibold gap-2 bg-white text-[#05091A] hover:bg-white/90 border-0">
-                <Link href={cms.ctaUrl ?? "/volunteer"}>
+                <Link href={cms.ctaUrl ?? "/join-us"}>
                   {cms.ctaLabel ?? "Become a Volunteer"} <ArrowRight size={15} />
                 </Link>
               </Button>
@@ -190,7 +190,7 @@ export default function VolunteerSpotlight({ volunteers = DEFAULT_VOLUNTEERS, on
             </p>
             <Button asChild size="lg"
               className="rounded-full h-12 px-8 font-semibold gap-2 bg-white text-[#05091A] hover:bg-white/90 border-0">
-              <Link href="/volunteer">
+              <Link href="/join-us">
                 Become a Volunteer <ArrowRight size={16} />
               </Link>
             </Button>

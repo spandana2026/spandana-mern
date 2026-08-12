@@ -140,7 +140,7 @@ export default function MobileMenu({
             )}
             {showGetInvolved && (
               <Button asChild className="w-full rounded-full gap-1.5">
-                <Link href="/volunteer" onClick={onClose}>
+                <Link href="/join-us" onClick={onClose}>
                   <HeartHandshake size={14} />
                   {getInvolvedLabel}
                 </Link>

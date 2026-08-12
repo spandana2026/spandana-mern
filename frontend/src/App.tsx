@@ -307,7 +307,7 @@ function Router() {
       <Route path="/testimonials" component={TestimonialsPage} />
       <Route path="/team" component={TeamPortal} />
       <Route path="/donate" component={DonatePage} />
-      <Route path="/volunteer" component={VolunteerPage} />
+      <Route path="/join-us" component={VolunteerPage} />
       <Route path="/events" component={EventsPage} />
       <Route path="/gallery" component={GalleryPage} />
       <Route path="/coloring" component={ColoringPage} />

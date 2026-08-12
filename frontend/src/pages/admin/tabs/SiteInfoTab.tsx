@@ -250,7 +250,7 @@ export default function SiteInfoTab({ settings, updateSettings, setSettings, tok
                   <Field label="Heading (line 1)"><Input value={settings.volunteerSpotlight?.heading ?? ""} onChange={(e) => updateSettings(["volunteerSpotlight", "heading"], e.target.value)} placeholder="Meet the people" /></Field>
                   <Field label="Heading Italic (line 2)"><Input value={settings.volunteerSpotlight?.headingItalic ?? ""} onChange={(e) => updateSettings(["volunteerSpotlight", "headingItalic"], e.target.value)} placeholder="behind the change." /></Field>
                 </div>
-                <Field label="CTA URL"><Input value={settings.volunteerSpotlight?.ctaUrl ?? ""} onChange={(e) => updateSettings(["volunteerSpotlight", "ctaUrl"], e.target.value)} placeholder="/volunteer" /></Field>
+                <Field label="CTA URL"><Input value={settings.volunteerSpotlight?.ctaUrl ?? ""} onChange={(e) => updateSettings(["volunteerSpotlight", "ctaUrl"], e.target.value)} placeholder="/join-us" /></Field>
               </SectionCard>
 
               <SectionCard title="Volunteer / Get Involved Section">

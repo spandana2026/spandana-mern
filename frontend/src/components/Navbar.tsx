@@ -18,7 +18,7 @@ const PAGE_VIS_MAP: Record<string, string> = {
   "/sahara":   "pageSahara",
   "/#vision":  "pageVision",
   "/vision":   "pageVision",
-  "/volunteer":"pageGetInvolved",
+  "/join-us":"pageGetInvolved",
   "/donate":   "pageDonate",
   "/shop":     "pageShop",
 };

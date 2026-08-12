@@ -278,7 +278,7 @@ const SITE_PAGES = [
   { path: "/",                label: "Home" },
   { path: "/donate",          label: "Donate" },
   { path: "/fun-zone",        label: "Joy Zone" },
-  { path: "/volunteer",       label: "Volunteer" },
+  { path: "/join-us",         label: "Volunteer" },
   { path: "/programs",        label: "Programs" },
   { path: "/events",          label: "Events" },
   { path: "/gallery",         label: "Gallery" },

@@ -169,7 +169,7 @@ export default function Header({
 
         {showGetInvolved && (
           <Button asChild size="default" className="rounded-full px-5 gap-1.5">
-            <Link href="/volunteer">
+            <Link href="/join-us">
               <HeartHandshake size={15} />
               {getInvolvedLabel}
             </Link>
@@ -240,7 +240,7 @@ export default function Header({
         )}
         {showGetInvolved && (
           <Link
-            href="/volunteer"
+            href="/join-us"
             className="flex flex-col items-center justify-center gap-1 text-primary hover:text-primary/80 transition-colors"
             aria-label={getInvolvedLabel}
           >

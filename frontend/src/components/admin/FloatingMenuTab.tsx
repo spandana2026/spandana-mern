@@ -168,7 +168,7 @@ const DEFAULT_MENU_ITEMS = [
   { emoji: "🏛️", label: "Sahara Community Centers", href: "/sahara" },
   { emoji: "📝", label: "Blog",                     href: "/blog" },
   { emoji: "❤️", label: "Donate",                   href: "/donate" },
-  { emoji: "🤝", label: "Volunteer",                href: "/volunteer" },
+  { emoji: "🤝", label: "Volunteer",                href: "/join-us" },
   { emoji: "🛍️", label: "Shop",                     href: "/shop" },
   { emoji: "🎮", label: "Joy Zone",                 href: "/fun-zone" },
 ];
