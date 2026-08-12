@@ -54,6 +54,12 @@ app.use(requestId);
 // Serve uploaded files
 app.use('/api/v1/uploads', express.static(env.UPLOADS_DIR));
 
+// Serve frontend public assets (images, etc.)
+const frontendPublic = path.join(__dirname, '..', 'frontend', 'public');
+if (fs.existsSync(frontendPublic)) {
+  app.use(express.static(frontendPublic));
+}
+
 // Health check
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', env: env.NODE_ENV, db: env.MONGO_URI ? 'mongodb' : 'json-fallback', uptime: process.uptime() });

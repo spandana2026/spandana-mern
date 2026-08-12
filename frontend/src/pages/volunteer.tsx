@@ -344,7 +344,7 @@ export default function VolunteerPage() {
               ) : (
                 <div key="form">
                   <div className="mb-8">
-                    <h2 className="text-xl md:text-2xl font-serif font-bold mb-1 whitespace-nowrap">Volunteer Application</h2>
+                    <h2 className="text-xl md:text-2xl font-serif font-bold mb-1 whitespace-nowrap">Join us Application</h2>
                     <p className="text-sm text-muted-foreground">Hey there! This form is friendly — we promise it won't bite.</p>
                     <p className="text-xs text-muted-foreground mt-0.5 whitespace-nowrap">Fields marked * are required.</p>
                   </div>
