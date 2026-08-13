@@ -22,13 +22,13 @@ function toEmbedUrl(raw: string): string {
   if (raw.includes("youtube.com/embed/") || raw.includes("youtu.be/embed/")) return raw;
   // youtube.com/watch?v=ID
   const watchMatch = raw.match(/youtube\.com\/watch\?(?:.*&)?v=([\w-]+)/);
-  if (watchMatch) return `https://www.youtube.com/embed/${watchMatch[1]}?autoplay=1`;
+  if (watchMatch) return `https://www.youtube.com/embed/${watchMatch[1]}?autoplay=1&playsinline=1`;
   // youtu.be/ID
   const shortMatch = raw.match(/youtu\.be\/([\w-]+)/);
-  if (shortMatch) return `https://www.youtube.com/embed/${shortMatch[1]}?autoplay=1`;
+  if (shortMatch) return `https://www.youtube.com/embed/${shortMatch[1]}?autoplay=1&playsinline=1`;
   // youtube.com/live/ID
   const liveMatch = raw.match(/youtube\.com\/live\/([\w-]+)/);
-  if (liveMatch) return `https://www.youtube.com/embed/${liveMatch[1]}?autoplay=1`;
+  if (liveMatch) return `https://www.youtube.com/embed/${liveMatch[1]}?autoplay=1&playsinline=1`;
   return raw;
 }
 
@@ -131,7 +131,7 @@ export default function LiveStreamPage() {
                 <iframe
                   src={embedUrl}
                   title={live.title || "Live Stream"}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; playsinline"
                   allowFullScreen
                   className="absolute inset-0 w-full h-full"
                 />
