@@ -22,7 +22,7 @@ function parseVideoEmbed(url: string): ParsedVideo | null {
   const ytMatch = url.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/);
   if (ytMatch) {
     const id = ytMatch[1];
-    return { type: "youtube", embedUrl: `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&playsinline=1&mute=1&loop=1&playlist=${id}&enablejsapi=1`, videoId: id };
+    return { type: "youtube", embedUrl: `https://www.youtube.com/embed/${id}?autoplay=1&playsinline=1&mute=1&loop=1&playlist=${id}&rel=0`, videoId: id };
   }
   const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
   if (vimeoMatch) {
@@ -170,8 +170,9 @@ export default function AdsCarousel() {
                         ref={iframeRef}
                         src={parsed.embedUrl}
                         className="absolute inset-0 w-full h-full border-0"
-                        allow="autoplay; encrypted-media; picture-in-picture; playsinline"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                         allowFullScreen
+                        loading="lazy"
                         title={ad.title}
                       />
                     )}

@@ -366,9 +366,9 @@ function VisionVideoPlayer({ videoId, caption }: { videoId: string; caption: str
         {/* Thumbnail / iframe */}
         {playing && videoId ? (
           <iframe
-            src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&playsinline=1&rel=0&modestbranding=1`}
+            src={`https://www.youtube.com/embed/${videoId}?autoplay=1&playsinline=1&rel=0`}
             title="Spandana Care Aid Foundation"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; playsinline"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowFullScreen
             loading="lazy"
             className="absolute inset-0 w-full h-full"
@@ -666,10 +666,10 @@ export default function Home() {
                 <motion.div className="absolute inset-0 overflow-hidden" style={{ y: heroY }}>
                   <div className="absolute inset-0" style={{ backgroundImage: `url('${fallback}')`, backgroundSize: "cover", backgroundPosition: "center" }} />
                   <iframe
-                    src={`https://www.youtube-nocookie.com/embed/${ytMatch[1]}?autoplay=1&mute=1&loop=1&playlist=${ytMatch[1]}&controls=0&showinfo=0&rel=0&modestbranding=1&iv_load_policy=3&playsinline=1`}
+                    src={`https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1&mute=1&loop=1&playlist=${ytMatch[1]}&rel=0&playsinline=1`}
                     className="absolute pointer-events-none"
                     style={{ width: "160%", height: "160%", top: "-30%", left: "-30%", border: "none" }}
-                    allow="autoplay; encrypted-media; playsinline"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                     title="Hero background"
                   />
                 </motion.div>
@@ -751,10 +751,10 @@ export default function Home() {
                 <motion.div className="absolute inset-0 overflow-hidden" style={{ y: heroY }}>
                   <div className="absolute inset-0" style={{ backgroundImage: `url('${fallback}')`, backgroundSize: "cover", backgroundPosition: "center" }} />
                   <iframe
-                    src={`https://www.youtube-nocookie.com/embed/${ytMatch[1]}?autoplay=1&mute=1&loop=1&playlist=${ytMatch[1]}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1`}
+                    src={`https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1&mute=1&loop=1&playlist=${ytMatch[1]}&rel=0&playsinline=1`}
                     className="absolute pointer-events-none"
                     style={{ width: "160%", height: "160%", top: "-30%", left: "-30%", border: "none" }}
-                    allow="autoplay; encrypted-media; playsinline"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                     title="Hero background"
                   />
                 </motion.div>
@@ -1211,9 +1211,9 @@ export default function Home() {
               onClick={(e) => e.stopPropagation()}
               className="w-full max-w-4xl aspect-video rounded-2xl overflow-hidden shadow-2xl">
               <iframe
-                src={`https://www.youtube-nocookie.com/embed/${s.promoVideoId}?autoplay=1&playsinline=1&rel=0&modestbranding=1`}
+                src={`https://www.youtube.com/embed/${s.promoVideoId}?autoplay=1&playsinline=1&rel=0`}
                 title="Promo Video"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; playsinline"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 allowFullScreen
                 loading="lazy"
                 className="w-full h-full" />
