@@ -58,7 +58,7 @@ export default function Header({
 
   return (
     <div
-      className={`flex items-center px-4 md:px-12 h-16 md:h-20 ${
+      className={`flex items-center px-4 md:px-12 h-24 md:h-20 ${
         logoPosition === "center"
           ? "justify-center relative"
           : logoPosition === "right"
@@ -85,7 +85,7 @@ export default function Header({
           initial={{ opacity: 0, scale: 0.88 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="h-12 md:h-14 w-auto"
+          className="h-20 md:h-14 w-auto"
           style={{
             flexShrink: 0,
             transform: `scale(${logoScale})`,
@@ -215,7 +215,7 @@ export default function Header({
       </div>
 
       {/* Mobile CTAs */}
-      <div className="md:hidden flex items-center gap-4 ml-auto mr-3">
+      <div className="md:hidden flex items-center gap-2.5 flex-1 justify-end mr-3">
         {liveEnabled && (
           <Link
             href="/live"
@@ -231,31 +231,31 @@ export default function Header({
         {showDonate && (
           <Link
             href="/donate"
-            className="flex flex-col items-center justify-center gap-1 text-primary hover:text-primary/80 transition-colors"
+            className="flex flex-col items-center justify-center gap-1 text-primary hover:text-primary/80 transition-colors flex-1"
             aria-label={donateLabel}
           >
-            <Heart size={28} strokeWidth={2} />
-            <span className="text-[12px] font-bold tracking-wide leading-none">{donateLabel}</span>
+            <Heart size={44} strokeWidth={2} />
+            <span className="text-[11px] font-bold tracking-wide leading-none whitespace-nowrap">{donateLabel}</span>
           </Link>
         )}
         {showGetInvolved && (
           <Link
             href="/join-us"
-            className="flex flex-col items-center justify-center gap-1 text-primary hover:text-primary/80 transition-colors"
+            className="flex flex-col items-center justify-center gap-1 text-primary hover:text-primary/80 transition-colors flex-1"
             aria-label={getInvolvedLabel}
           >
-            <HeartHandshake size={28} strokeWidth={2} />
-            <span className="text-[12px] font-bold tracking-wide leading-none">Volunteer</span>
+            <HeartHandshake size={44} strokeWidth={2} />
+            <span className="text-[11px] font-bold tracking-wide leading-none whitespace-nowrap">Volunteer</span>
           </Link>
         )}
         {pageVisibility.pageFunZone !== false && (
           <Link
             href="/fun-zone"
-            className="flex flex-col items-center justify-center gap-1 text-primary hover:text-primary/80 transition-colors"
+            className="flex flex-col items-center justify-center gap-1 text-primary hover:text-primary/80 transition-colors flex-1"
             aria-label="Joy Zone"
           >
-            <Gamepad2 size={28} strokeWidth={2} />
-            <span className="text-[12px] font-bold tracking-wide leading-none">Joy Zone</span>
+            <Gamepad2 size={44} strokeWidth={2} />
+            <span className="text-[11px] font-bold tracking-wide leading-none whitespace-nowrap">Joy Zone</span>
           </Link>
         )}
         {showShop && (
@@ -264,20 +264,20 @@ export default function Header({
               href={shopUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex flex-col items-center justify-center gap-1 text-primary hover:text-primary/80 transition-colors"
+              className="flex flex-col items-center justify-center gap-1 text-primary hover:text-primary/80 transition-colors flex-1"
               aria-label={shopLabel}
             >
-              <ShoppingBag size={28} strokeWidth={2} />
-              <span className="text-[12px] font-bold tracking-wide leading-none">{shopLabel}</span>
+              <ShoppingBag size={44} strokeWidth={2} />
+              <span className="text-[11px] font-bold tracking-wide leading-none whitespace-nowrap">{shopLabel}</span>
             </a>
           ) : (
             <Link
               href="/shop"
-              className="flex flex-col items-center justify-center gap-1 text-primary hover:text-primary/80 transition-colors"
+              className="flex flex-col items-center justify-center gap-1 text-primary hover:text-primary/80 transition-colors flex-1"
               aria-label={shopLabel}
             >
-              <ShoppingBag size={28} strokeWidth={2} />
-              <span className="text-[12px] font-bold tracking-wide leading-none">{shopLabel}</span>
+              <ShoppingBag size={44} strokeWidth={2} />
+              <span className="text-[11px] font-bold tracking-wide leading-none whitespace-nowrap">{shopLabel}</span>
             </Link>
           )
         )}
@@ -285,11 +285,11 @@ export default function Header({
 
       {/* Mobile hamburger */}
       <button
-        className="md:hidden text-foreground"
+        className="md:hidden text-black hover:text-primary transition-colors"
         onClick={onToggle}
         aria-label="Toggle menu"
       >
-        {open ? <X size={24} /> : <Menu size={24} />}
+        {open ? <X size={28} strokeWidth={2.5} /> : <Menu size={28} strokeWidth={2.5} />}
       </button>
     </div>
   );
