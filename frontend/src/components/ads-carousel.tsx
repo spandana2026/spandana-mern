@@ -101,7 +101,8 @@ export default function AdsCarousel() {
   if (!adsEnabled) return null;
 
   const ad = displayAds[current];
-  const hasImage = !!ad.image;
+  const imgSrc = ad.image || (ad as any).imageUrl;
+  const hasImage = !!imgSrc;
   const parsed = ad.videoUrl ? parseVideoEmbed(ad.videoUrl) : null;
   const isVideo = !!parsed;
 
@@ -202,7 +203,7 @@ export default function AdsCarousel() {
                   /* ── IMAGE ── */
                   <>
                     <img
-                      src={ad.image}
+                      src={imgSrc}
                       alt={ad.title}
                       className="absolute inset-0 w-full h-full object-cover object-center"
                     />

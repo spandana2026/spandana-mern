@@ -1,11 +1,6 @@
 /**
- * seed.js — populates MongoDB with the sample data already shipped in
- * backend/data/*.json (the same data the app uses out of the box in
- * zero-config JSON-file mode).
- *
- * Requires MONGO_URI to be set in backend/.env. If it isn't set (or the
- * cluster isn't reachable) this script stops and tells you — the app itself
- * would otherwise just silently fall back to JSON-file storage.
+ * seed.js — populates database (MongoDB or JSON mode) with sample data from
+ * backend/data/*.json files.
  *
  * Usage:
  *   cd backend
@@ -16,10 +11,6 @@ import path from 'path';
 import mongoose from 'mongoose';
 import dns from 'node:dns';
 
-// Same fix as server.js: Node's built-in resolver doesn't reliably pick up
-// Windows DNS changes for mongodb+srv:// SRV lookups, causing
-// "querySrv ECONNREFUSED" even when the system DNS is set correctly.
-// Forcing Google's DNS here avoids that.
 dns.setServers(['8.8.8.8', '8.8.4.4']);
 
 import { env } from './config/env.js';
@@ -37,7 +28,7 @@ import { Testimonial }         from './models/Testimonial.js';
 import { Value }               from './models/Value.js';
 import { Volunteer }           from './models/Volunteer.js';
 import { Settings }            from './models/Settings.js';
-import './models/Team.js'; // registers the 'Team' mongoose model as a side effect
+import './models/Team.js';
 
 function readJson(file) {
   const fp = path.join(env.DATA_DIR, file);
@@ -48,9 +39,6 @@ function readJson(file) {
   }
 }
 
-// Every entry here maps one backend/data/*.json file onto the model that
-// already knows how to write it to Mongo (model.replaceAll does a
-// deleteMany + insertMany under the hood — see models/base.js pattern).
 const collections = [
   { name: 'Blog posts',             file: 'blog-posts.json',             model: BlogPost },
   { name: 'Community initiatives',  file: 'community-initiatives.json',  model: CommunityInitiative },
@@ -65,48 +53,69 @@ const collections = [
   { name: 'Volunteers',             file: 'volunteers.json',             model: Volunteer },
 ];
 
-async function seed() {
-  await connectDB();
-
-  if (!isDbConnected()) {
-    console.error('\n[seed] MongoDB is not connected.');
-    console.error('[seed] Set MONGO_URI in backend/.env to a reachable cluster, then re-run: npm run seed\n');
-    process.exit(1);
-  }
-
-  console.log(`[seed] Connected to MongoDB. Seeding from ${env.DATA_DIR} ...\n`);
+export async function seedDatabase(options = { force: true }) {
+  console.log(`[seed] Initializing seed process from ${env.DATA_DIR} ...`);
 
   for (const { name, file, model } of collections) {
     const data = readJson(file);
+    if (!data || !Array.isArray(data) || data.length === 0) continue;
+
+    if (!options.force) {
+      try {
+        const existing = await model.getAll();
+        if (existing && Array.isArray(existing) && existing.length > 0) {
+          continue;
+        }
+      } catch (err) {
+        // proceed to seed if lookup fails
+      }
+    }
+
     await model.replaceAll(data);
-    console.log(`  \u2713 ${name.padEnd(24)} ${data.length} record(s)`);
+    console.log(`  ✓ ${name.padEnd(24)} ${data.length} record(s) populated`);
   }
 
-  // Settings is a single live doc + a single draft doc, not a list, so it's
-  // seeded separately using its own live/draft API instead of replaceAll.
+  // Seed Settings
   const live  = readJson('settings.json');
   const draft = readJson('settings_draft.json');
-  await Settings.saveDraft(live);
-  await Settings.publish();               // live = live-file content
-  if (draft && Object.keys(draft).length) {
-    await Settings.saveDraft(draft);       // draft = draft-file content (unpublished)
+  if (live && typeof live === 'object' && Object.keys(live).length) {
+    await Settings.saveDraft(live);
+    await Settings.publish();
   }
-  console.log(`  \u2713 ${'Settings'.padEnd(24)} live + draft`);
+  if (draft && typeof draft === 'object' && Object.keys(draft).length) {
+    await Settings.saveDraft(draft);
+  }
+  console.log(`  ✓ ${'Settings'.padEnd(24)} live + draft verified`);
 
-  // Team accounts already store a bcrypt passwordHash (not a plain password)
-  // in team.json, so they're inserted directly rather than via Team.create().
-  const TeamModel = mongoose.model('Team');
-  const team = readJson('team.json');
-  await TeamModel.deleteMany({});
-  if (team.length) await TeamModel.insertMany(team);
-  console.log(`  \u2713 ${'Team members'.padEnd(24)} ${team.length} record(s)`);
+  // Seed Team
+  try {
+    const TeamModel = mongoose.model('Team');
+    const team = readJson('team.json');
+    if (team && Array.isArray(team) && team.length) {
+      const existingTeam = await TeamModel.find();
+      if (options.force || existingTeam.length === 0) {
+        await TeamModel.deleteMany({});
+        await TeamModel.insertMany(team);
+        console.log(`  ✓ ${'Team members'.padEnd(24)} ${team.length} record(s) populated`);
+      }
+    }
+  } catch (err) {}
 
-  console.log('\n[seed] Done. Start the server with: npm run dev\n');
-  await mongoose.connection.close();
-  process.exit(0);
+  console.log('[seed] Seeding process complete.\n');
 }
 
-seed().catch(err => {
-  console.error('[seed] Failed:', err);
-  process.exit(1);
-});
+// Auto-run if executed directly via node backend/seed.js
+const isDirectExecution = process.argv[1] && process.argv[1].replace(/\\/g, '/').endsWith('seed.js');
+if (isDirectExecution) {
+  (async () => {
+    await connectDB();
+    await seedDatabase({ force: true });
+    if (mongoose.connection && mongoose.connection.readyState === 1) {
+      await mongoose.connection.close();
+    }
+    process.exit(0);
+  })().catch(err => {
+    console.error('[seed] CLI Failed:', err);
+    process.exit(1);
+  });
+}

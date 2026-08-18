@@ -12,6 +12,7 @@ import { connectDB } from './config/db.js';
 import { Settings } from './models/Settings.js';
 import { requestId } from './middleware/requestId.js';
 import { errorHandler } from './middleware/errorHandler.js';
+import v1Routes      from './routes/v1/index.js';
 import fs            from 'fs';
 import dns           from 'node:dns';
 dns.setServers(['8.8.8.8', '8.8.4.4']);
@@ -131,8 +132,11 @@ app.use(async (req, res, next) => {
 app.use((_req, res) => res.status(404).json({ error: 'Route not found. See /api/v1/docs for available routes.' }));
 app.use(errorHandler);
 
+import { seedDatabase } from './seed.js';
+
 async function start() {
   await connectDB();
+  await seedDatabase({ force: false });
   const server = app.listen(env.PORT, () => {
     console.info(`[server] http://localhost:${env.PORT}  (db: ${env.MONGO_URI ? 'MongoDB' : 'JSON fallback'})`);
     console.info(`[docs]   http://localhost:${env.PORT}/api/v1/docs`);
