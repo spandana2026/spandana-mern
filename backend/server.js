@@ -21,6 +21,9 @@ dns.setServers(['8.8.8.8', '8.8.4.4']);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 
+// Configure trust proxy for Hostinger/Nginx reverse proxy (1 hop) before rate limiter initialization
+app.set('trust proxy', 1);
+
 // Fix #18: Full CSP via helmet
 app.use(helmet({
   contentSecurityPolicy: {
