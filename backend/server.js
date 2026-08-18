@@ -12,8 +12,8 @@ import { connectDB } from './config/db.js';
 import { Settings } from './models/Settings.js';
 import { requestId } from './middleware/requestId.js';
 import { errorHandler } from './middleware/errorHandler.js';
-import v1Routes      from './routes/v1/index.js';
-import dns from 'node:dns';
+import fs            from 'fs';
+import dns           from 'node:dns';
 dns.setServers(['8.8.8.8', '8.8.4.4']);
 
 
@@ -79,8 +79,6 @@ app.use('/api', apiLimiter, v1Routes);
 // Node.js app (e.g. on Hostinger's Node.js Web Apps hosting, which deploys
 // one GitHub-connected app per website). Local dev is unaffected — Vite's
 // own dev server keeps handling the frontend there and frontend/dist won't
-// exist until `npm run build` has been run.
-import fs from 'fs';
 const frontendDist = path.join(__dirname, '..', 'frontend', 'dist');
 if (fs.existsSync(frontendDist)) {
   app.use(express.static(frontendDist, { index: false }));
