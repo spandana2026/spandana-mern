@@ -81,7 +81,7 @@ export default function Programs() {
   return (
     <>
       <Nav />
-      <main className="pt-20">
+      <main className="pt-24 sm:pt-28 md:pt-32">
         {/* ── HERO ── */}
         <section className="relative min-h-[56vh] flex flex-col items-center justify-center text-center overflow-hidden bg-primary px-6 py-24">
           <div

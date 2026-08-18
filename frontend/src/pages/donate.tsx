@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Copy, CheckCircle2, Globe, Building2, ChevronDown, ChevronUp, ArrowRight, RefreshCw, ChevronDown as DropIcon, AlertCircle } from "lucide-react";
 import Nav from "@/components/nav";
@@ -127,7 +127,10 @@ function CopyBtn({ text }: { text: string }) {
 
 export default function DonatePage() {
   const [settings, setSettings]         = useState<DonateSettings>({});
-  const [donorType, setDonorType]       = useState<"indian" | "intl">("indian");
+  const searchParams = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
+  const initialType = searchParams.get("type") === "intl" || searchParams.get("tab") === "intl" || (typeof window !== "undefined" && window.location.hash === "#intl") ? "intl" : "indian";
+
+  const [donorType, setDonorType]       = useState<"indian" | "intl">(initialType);
   const [programIdx, setProgramIdx]     = useState(0);
   const [tierIdx, setTierIdx]           = useState<number | null>(null);
   const [custom, setCustom]             = useState("");
@@ -160,6 +163,7 @@ export default function DonatePage() {
 
   useEffect(() => {
     if (!settingsLoaded) return;
+    if (searchParams.get("type") === "intl" || searchParams.get("tab") === "intl" || window.location.hash === "#intl") return;
     if (settings.donatePage?.geoAutoSwitch === false) return;
     fetch("https://ipapi.co/json/")
       .then(r => r.json())
@@ -173,6 +177,11 @@ export default function DonatePage() {
   }, [settingsLoaded]);
 
   useEffect(() => {
+    setTierIdx(null);
+    setCustom("");
+  }, [donorType]);
+
+  useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (dropRef.current && !dropRef.current.contains(e.target as Node)) setDropOpen(false);
     };
@@ -181,7 +190,33 @@ export default function DonatePage() {
   }, []);
 
   const cur = CURRENCIES.find(c => c.code === currencyCode) ?? CURRENCIES[0];
-  const programs: DonateProgram[] = settings.donatePage?.programs ?? DEFAULT_PROGRAMS;
+
+  const programs: DonateProgram[] = useMemo(() => {
+    if (donorType === "indian") {
+      if (settings.donatePage?.programsIndia?.length) {
+        return settings.donatePage.programsIndia.map(p => ({
+          icon: p.icon,
+          name: p.name,
+          desc: p.desc,
+          inr: (p.inr as [number, number, number]) ?? [0, 0, 0],
+          usd: [0, 0, 0] as [number, number, number],
+        }));
+      }
+      return settings.donatePage?.programs ?? DEFAULT_PROGRAMS;
+    } else {
+      if (settings.donatePage?.programsIntl?.length) {
+        return settings.donatePage.programsIntl.map(p => ({
+          icon: p.icon,
+          name: p.name,
+          desc: p.desc,
+          inr: [0, 0, 0] as [number, number, number],
+          usd: (p.usd as [number, number, number]) ?? [0, 0, 0],
+        }));
+      }
+      return settings.donatePage?.programs ?? DEFAULT_PROGRAMS;
+    }
+  }, [donorType, settings.donatePage?.programsIndia, settings.donatePage?.programsIntl, settings.donatePage?.programs]);
+
   const prog = programs[Math.min(programIdx, programs.length - 1)] ?? programs[0];
 
   const getRate = (code: string) =>
@@ -258,14 +293,15 @@ export default function DonatePage() {
           <p className="text-white/70 text-xs md:text-sm mb-5 max-w-xs mx-auto leading-relaxed"
             dangerouslySetInnerHTML={{ __html: safeHtml(subhead) }} />
 
+          {/* Donor Location Badge (Auto-Detected via Geo) */}
           <div className="flex justify-center">
-            <span className="inline-flex items-center gap-1.5 bg-white/10 border border-white/15 rounded-full px-4 py-2 text-xs font-bold text-white">
+            <span className="inline-flex items-center gap-1.5 bg-white/10 border border-white/15 rounded-full px-4 py-2 text-xs font-bold text-white shadow-sm">
               {donorType === "indian" ? indianTabLabel : intlTabLabel}
             </span>
           </div>
           {geoDetected && (
-            <p className="text-center text-white/50 text-[10px] mt-2">
-              📍 Detected automatically based on your location
+            <p className="text-center text-white/60 text-[10px] mt-2 font-medium">
+              📍 Location auto-detected based on your region
             </p>
           )}
         </motion.div>
@@ -445,8 +481,20 @@ export default function DonatePage() {
                       <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2.5">Open your app</p>
                       <div className={`grid gap-2 ${visibleAppButtons.length <= 2 ? "grid-cols-2" : visibleAppButtons.length === 3 ? "grid-cols-3" : "grid-cols-4"}`}>
                         {visibleAppButtons.map(({ app, label, Icon }) => (
-                          <a key={app} href={upiHref(app, upiId, upiName, amtInr)}
-                            className="flex flex-col items-center gap-1.5 py-2.5 px-1 rounded-xl border border-orange-100 hover:border-orange-300 hover:bg-orange-50/50 transition-all active:scale-95 bg-white/60">
+                          <a
+                            key={app}
+                            href={upiHref(app, upiId, upiName, amtInr)}
+                            onClick={(e) => {
+                              const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                              if (!isMobile) {
+                                e.preventDefault();
+                                navigator.clipboard.writeText(upiId).then(() => {
+                                  alert(`UPI ID (${upiId}) copied to clipboard! Please use your ${label} app on mobile or scan the QR code to pay.`);
+                                }).catch(() => {});
+                              }
+                            }}
+                            className="flex flex-col items-center gap-1.5 py-2.5 px-1 rounded-xl border border-orange-100 hover:border-orange-300 hover:bg-orange-50/50 transition-all active:scale-95 bg-white/60"
+                          >
                             <Icon />
                             <span className="text-[10px] font-medium text-foreground leading-tight text-center">{label}</span>
                           </a>
@@ -459,7 +507,19 @@ export default function DonatePage() {
                         <AnimatePresence mode="wait">
                           <motion.div key={qrSrc} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }}
                             className="border-2 border-orange-100 rounded-2xl p-3 bg-white shadow-md inline-block">
-                            <img src={qrSrc} alt="UPI QR Code" className="w-44 h-44 object-contain" />
+                            <img
+                              src={qrSrc}
+                              alt="UPI QR Code"
+                              className="w-44 h-44 object-contain"
+                              onError={(e) => {
+                                const target = e.currentTarget;
+                                if (upiId && target.src !== dynamicQrUrl) {
+                                  target.src = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&margin=8&data=${encodeURIComponent(`upi://pay?pa=${upiId}&pn=${encodeURIComponent(upiName)}&cu=INR&tn=Donation+to+Spandana`)}`;
+                                } else {
+                                  target.style.display = "none";
+                                }
+                              }}
+                            />
                           </motion.div>
                         </AnimatePresence>
                         <p className="text-xs text-muted-foreground">

@@ -2,7 +2,7 @@ import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import {
   Menu, X, Heart, ShoppingBag, HeartHandshake,
-  ChevronDown, Shield, Brain, Radio, Gamepad2,
+  ChevronDown, Shield, Brain, Radio, Gamepad2, Home,
 } from "lucide-react";
 import { useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -58,7 +58,7 @@ export default function Header({
 
   return (
     <div
-      className={`flex items-center px-4 md:px-12 h-24 md:h-20 ${
+      className={`flex items-center px-3 md:px-12 h-28 md:h-24 ${
         logoPosition === "center"
           ? "justify-center relative"
           : logoPosition === "right"
@@ -75,7 +75,7 @@ export default function Header({
             window.scrollTo({ top: 0, behavior: "smooth" });
           }
         }}
-        className={`flex items-center gap-2 opacity-90 hover:opacity-100 transition-opacity cursor-pointer ${
+        className={`flex items-center gap-2 opacity-95 hover:opacity-100 transition-opacity cursor-pointer ${
           logoPosition === "center" ? "absolute left-1/2 -translate-x-1/2" : ""
         }`}
       >
@@ -85,7 +85,7 @@ export default function Header({
           initial={{ opacity: 0, scale: 0.88 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="h-20 md:h-14 w-auto"
+          className="h-24 md:h-16 w-auto max-h-full"
           style={{
             flexShrink: 0,
             transform: `scale(${logoScale})`,
@@ -214,83 +214,92 @@ export default function Header({
         )}
       </div>
 
-      {/* Mobile CTAs */}
-      <div className="md:hidden flex items-center gap-2.5 flex-1 justify-end mr-3">
+      {/* Mobile CTAs & Header Action Icons */}
+      <div className="md:hidden flex items-center justify-between gap-1 xs:gap-1.5 flex-1 ml-1 sm:ml-3">
         {liveEnabled && (
           <Link
             href="/live"
-            className="flex flex-col items-center justify-center gap-0.5"
+            className="flex flex-col items-center justify-center gap-0.5 shrink-0 px-1"
             aria-label="Watch Live"
           >
-            <span className="flex items-center gap-1 bg-red-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full animate-pulse shadow-sm">
+            <span className="flex items-center gap-1 bg-red-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full animate-pulse shadow-sm">
               <Radio size={10} />
               LIVE
             </span>
           </Link>
         )}
+        
+        {/* Home Link */}
+        <Link
+          href="/"
+          onClick={(e) => {
+            if (location === "/") {
+              e.preventDefault();
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }
+          }}
+          className="flex flex-col items-center justify-center gap-0.5 text-primary hover:text-primary/80 transition-colors px-1 shrink-0"
+          aria-label="Home"
+        >
+          <Home size={24} strokeWidth={2.2} />
+          <span className="text-[10px] xs:text-[11px] font-bold tracking-tight leading-none whitespace-nowrap">Home</span>
+        </Link>
+
         {showDonate && (
           <Link
             href="/donate"
-            className="flex flex-col items-center justify-center gap-1 text-primary hover:text-primary/80 transition-colors flex-1"
+            className="flex flex-col items-center justify-center gap-0.5 text-primary hover:text-primary/80 transition-colors px-1 shrink-0"
             aria-label={donateLabel}
           >
-            <Heart size={44} strokeWidth={2} />
-            <span className="text-[11px] font-bold tracking-wide leading-none whitespace-nowrap">{donateLabel}</span>
+            <Heart size={24} strokeWidth={2.2} />
+            <span className="text-[10px] xs:text-[11px] font-bold tracking-tight leading-none whitespace-nowrap">{donateLabel}</span>
           </Link>
         )}
+
         {showGetInvolved && (
           <Link
             href="/join-us"
-            className="flex flex-col items-center justify-center gap-1 text-primary hover:text-primary/80 transition-colors flex-1"
+            className="flex flex-col items-center justify-center gap-0.5 text-primary hover:text-primary/80 transition-colors px-1 shrink-0"
             aria-label={getInvolvedLabel}
           >
-            <HeartHandshake size={44} strokeWidth={2} />
-            <span className="text-[11px] font-bold tracking-wide leading-none whitespace-nowrap">Volunteer</span>
+            <HeartHandshake size={24} strokeWidth={2.2} />
+            <span className="text-[10px] xs:text-[11px] font-bold tracking-tight leading-none whitespace-nowrap">Join Us</span>
           </Link>
         )}
-        {pageVisibility.pageFunZone !== false && (
-          <Link
-            href="/fun-zone"
-            className="flex flex-col items-center justify-center gap-1 text-primary hover:text-primary/80 transition-colors flex-1"
-            aria-label="Joy Zone"
-          >
-            <Gamepad2 size={44} strokeWidth={2} />
-            <span className="text-[11px] font-bold tracking-wide leading-none whitespace-nowrap">Joy Zone</span>
-          </Link>
-        )}
+
         {showShop && (
           shopUrl ? (
             <a
               href={shopUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex flex-col items-center justify-center gap-1 text-primary hover:text-primary/80 transition-colors flex-1"
+              className="flex flex-col items-center justify-center gap-0.5 text-primary hover:text-primary/80 transition-colors px-1 shrink-0"
               aria-label={shopLabel}
             >
-              <ShoppingBag size={44} strokeWidth={2} />
-              <span className="text-[11px] font-bold tracking-wide leading-none whitespace-nowrap">{shopLabel}</span>
+              <ShoppingBag size={24} strokeWidth={2.2} />
+              <span className="text-[10px] xs:text-[11px] font-bold tracking-tight leading-none whitespace-nowrap">{shopLabel}</span>
             </a>
           ) : (
             <Link
               href="/shop"
-              className="flex flex-col items-center justify-center gap-1 text-primary hover:text-primary/80 transition-colors flex-1"
+              className="flex flex-col items-center justify-center gap-0.5 text-primary hover:text-primary/80 transition-colors px-1 shrink-0"
               aria-label={shopLabel}
             >
-              <ShoppingBag size={44} strokeWidth={2} />
-              <span className="text-[11px] font-bold tracking-wide leading-none whitespace-nowrap">{shopLabel}</span>
+              <ShoppingBag size={24} strokeWidth={2.2} />
+              <span className="text-[10px] xs:text-[11px] font-bold tracking-tight leading-none whitespace-nowrap">{shopLabel}</span>
             </Link>
           )
         )}
-      </div>
 
-      {/* Mobile hamburger */}
-      <button
-        className="md:hidden text-black hover:text-primary transition-colors"
-        onClick={onToggle}
-        aria-label="Toggle menu"
-      >
-        {open ? <X size={28} strokeWidth={2.5} /> : <Menu size={28} strokeWidth={2.5} />}
-      </button>
+        {/* Mobile hamburger */}
+        <button
+          className="shrink-0 flex items-center justify-center w-9 h-9 rounded-full bg-transparent text-black dark:text-white hover:bg-black/5 transition-colors p-1 ml-0.5"
+          onClick={onToggle}
+          aria-label="Toggle menu"
+        >
+          {open ? <X size={24} strokeWidth={2.2} /> : <Menu size={24} strokeWidth={2.2} />}
+        </button>
+      </div>
     </div>
   );
 }

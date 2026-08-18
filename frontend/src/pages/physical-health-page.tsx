@@ -173,9 +173,9 @@ export default function PhysicalHealthPage() {
   return (
     <>
       <Nav />
-      <main className="pt-28">
+      <main className="pt-32 sm:pt-36 md:pt-44">
         {/* ── STICKY SUB-NAV (always visible) ── */}
-        <div className="fixed top-20 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-b border-border shadow-sm">
+        <div className="fixed top-16 sm:top-20 md:top-24 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-b border-border/80 shadow-md">
           <div className="max-w-6xl mx-auto px-3 flex items-center py-2">
             {sections.map((s) => {
               const Icon = s.icon;

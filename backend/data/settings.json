@@ -845,7 +845,7 @@
   "whatsappGroupName": "Spandana Care Aid  ",
   "whatsappGroupLink": "https://chat.whatsapp.com/BP0vw4ZmsCjHR5Ve9kMWra",
   "upiId": "neenasenterprises@ybl",
-  "upiQrUrl": "/api/uploads/upload-neenas-qr.jpeg",
+  "upiQrUrl": "",
   "bankAccountNumber": "1734120030000037",
   "bankIfsc": "UJVN0001734",
   "bankName": "UJJIVANSMALL FINANCE BANK",
@@ -855,5 +855,11 @@
   "shopSubtitle": "Discover beautiful handcrafted and eco-friendly products. 100% of proceeds support our education, healthcare, and empowerment programs.",
   "announcementText": "",
   "announcementEnabled": false,
-  "visitorCount": 50
+  "visitorCount": 50,
+  "adsEnabled": true,
+  "ads": [
+    { "id": "psa-no-drugs", "title": "Say No to Drugs", "subtitle": "Every choice matters. Choose life, choose hope. Stand against substance abuse in our communities.", "image": "/ads/no-drugs.png", "link": "", "enabled": true },
+    { "id": "psa-no-trafficking", "title": "Stop Human Trafficking", "subtitle": "Protect children and women. Report suspicious activity. Together we can end exploitation.", "image": "/ads/no-trafficking.png", "link": "", "enabled": true },
+    { "id": "child-labor-2024", "title": "Every Child Deserves an Education", "subtitle": "Child labour robs children of their future. Help us fight it — report, support, and speak up.", "image": "/ads/child-labor.png", "link": "", "enabled": true }
+  ]
 }

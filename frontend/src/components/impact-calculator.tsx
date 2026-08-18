@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Stethoscope, BookOpen, HeartHandshake, Users, Utensils } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -37,6 +37,7 @@ export default function ImpactCalculator() {
   const [cfg, setCfg]                     = useState<ImpactSection>({});
   const [programs, setPrograms]           = useState<Program[]>(DEFAULT_PROGRAMS);
   const [donorType, setDonorType]         = useState<"indian" | "intl">("indian");
+  const [donatePageSettings, setDonatePageSettings] = useState<any>(null);
   const [settingsLoaded, setSettingsLoaded] = useState(false);
 
   useEffect(() => {
@@ -44,7 +45,10 @@ export default function ImpactCalculator() {
       .then((r) => r.json())
       .then((d) => {
         if (d?.impactSection) setCfg(d.impactSection);
-        if (d?.donatePage?.programs?.length) setPrograms(d.donatePage.programs);
+        if (d?.donatePage) {
+          setDonatePageSettings(d.donatePage);
+          if (d.donatePage.programs?.length) setPrograms(d.donatePage.programs);
+        }
         setSettingsLoaded(true);
       })
       .catch(() => setSettingsLoaded(true));
@@ -62,105 +66,168 @@ export default function ImpactCalculator() {
       .catch(() => {});
   }, [settingsLoaded]);
 
+  const activePrograms: DonateProgram[] = useMemo(() => {
+    if (donorType === "indian") {
+      if (donatePageSettings?.programsIndia?.length) {
+        return donatePageSettings.programsIndia.map((p: any) => ({
+          icon: p.icon,
+          name: p.name,
+          desc: p.desc,
+          inr: p.inr,
+          usd: [0, 0, 0],
+        }));
+      }
+      return donatePageSettings?.programs ?? programs;
+    } else {
+      if (donatePageSettings?.programsIntl?.length) {
+        return donatePageSettings.programsIntl.map((p: any) => ({
+          icon: p.icon,
+          name: p.name,
+          desc: p.desc,
+          inr: [0, 0, 0],
+          usd: p.usd,
+        }));
+      }
+      return donatePageSettings?.programs ?? programs;
+    }
+  }, [donorType, donatePageSettings, programs]);
+
   const heading  = cfg.heading       ?? DEFAULT_HEADING;
   const italic   = cfg.headingItalic ?? DEFAULT_HEADING_ITALIC;
   const subtitle = cfg.subtitle      ?? DEFAULT_SUBTITLE;
   const note     = cfg.note          ?? DEFAULT_NOTE;
 
-  const idx   = Math.min(selected, programs.length - 1);
-  const prog  = programs[idx]!;
+  const idx   = Math.min(selected, activePrograms.length - 1);
+  const prog  = activePrograms[idx]!;
   const color = PROG_COLORS[idx % PROG_COLORS.length]!;
-  const style = COLOR_MAP[color] ?? COLOR_MAP["blue"]!;
+  const style = COLOR_MAP[color] ?? COLOR_MAP["pink"]!;
   const Icon  = PROG_ICONS[idx % PROG_ICONS.length]!;
 
   const midInr = prog.inr[1] ?? prog.inr[0] ?? 0;
   const midUsd = prog.usd[1] ?? prog.usd[0] ?? 0;
-  const btnLabel = donorType === "indian"
+  const currentPriceLabel = donorType === "indian"
     ? `₹${midInr.toLocaleString("en-IN")}`
     : `$${midUsd}`;
 
   return (
-    <section className="py-14 md:py-24 px-6 md:px-12 bg-card overflow-hidden">
+    <section className="py-12 md:py-20 px-4 md:px-8 bg-background overflow-hidden relative">
       <div className="max-w-5xl mx-auto">
+        {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }} transition={{ duration: 0.7 }}
-          className="text-center mb-10"
+          initial={{ opacity: 0, y: 15 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="text-center mb-8 sm:mb-10"
         >
-          {/* Badge */}
-          <div className="flex items-center justify-center gap-3 flex-wrap mb-4">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/8 text-primary text-xs font-bold uppercase tracking-widest">
-              Your Impact
-            </div>
+          <div className="inline-flex items-center justify-center px-4 py-1 rounded-full bg-blue-100 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 text-xs font-extrabold uppercase tracking-widest mb-4">
+            YOUR IMPACT
           </div>
 
-          <h2 className="text-3xl md:text-5xl font-serif font-medium">
-            {heading} <span className="italic text-muted-foreground">{italic}</span>
+          <h2 className="text-2xl sm:text-4xl md:text-5xl font-serif font-bold text-foreground leading-tight tracking-tight max-w-3xl mx-auto">
+            {heading} <span className="italic font-normal relative inline-block text-foreground">{italic}<span className="absolute bottom-1 left-0 right-0 h-0.5 bg-primary/80 rounded-full" /></span>
           </h2>
-          <p className="text-muted-foreground mt-3 text-base">{subtitle}</p>
+          
+          <p className="text-muted-foreground mt-3 text-xs sm:text-base max-w-xl mx-auto leading-relaxed font-medium">
+            {subtitle}
+          </p>
         </motion.div>
 
-        {/* Program Selector */}
-        <div className="grid grid-cols-3 sm:flex sm:flex-wrap justify-center gap-3 mb-10">
-          {programs.map((p, i) => {
+        {/* Price-only Buttons (1 row on laptop, 1-2 rows on mobile, NO horizontal scroll) */}
+        <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3.5 mb-10 max-w-full">
+          {activePrograms.map((p, i) => {
             const pInr = p.inr[1] ?? p.inr[0] ?? 0;
             const pUsd = p.usd[1] ?? p.usd[0] ?? 0;
+            const priceText = donorType === "indian"
+              ? `₹${pInr.toLocaleString("en-IN")}`
+              : `$${pUsd}`;
+            const isSelected = idx === i;
+            const tag = PROG_TAGS[i];
+
             return (
-              <motion.button key={i} onClick={() => setSelected(i)}
-                whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}
-                className={`relative px-4 py-2.5 rounded-full text-sm font-bold border-2 transition-all duration-200 mt-3
-                  ${idx === i
-                    ? "bg-primary text-white border-primary shadow-lg shadow-primary/25"
-                    : "border-border text-foreground hover:border-primary/50 bg-background"}`}
-              >
-                {PROG_TAGS[i] && (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[9px] font-bold bg-primary text-white px-2 py-0.5 rounded-full uppercase tracking-wide whitespace-nowrap">
-                    {PROG_TAGS[i]}
+              <div key={i} className="relative pt-3">
+                {tag && (
+                  <span className="absolute top-0 left-1/2 -translate-x-1/2 text-[8px] sm:text-[9px] font-extrabold bg-indigo-600 text-white px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm whitespace-nowrap z-10">
+                    {tag}
                   </span>
                 )}
-                <span className="mr-1">{p.icon}</span>
-                {donorType === "indian"
-                  ? `₹${pInr.toLocaleString("en-IN")}`
-                  : `$${pUsd}`}
-              </motion.button>
+                <motion.button
+                  onClick={() => setSelected(i)}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className={`px-3.5 sm:px-6 py-2 sm:py-2.5 rounded-full text-xs sm:text-base font-bold transition-all duration-200 border ${
+                    isSelected
+                      ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/30 ring-2 ring-primary/20 scale-105"
+                      : "bg-card text-foreground border-border/80 hover:border-primary/50 hover:bg-accent/40"
+                  }`}
+                >
+                  {priceText}
+                </motion.button>
+              </div>
             );
           })}
         </div>
 
-        {/* Impact Card */}
+        {/* Selected Impact Detail Card */}
         <AnimatePresence mode="wait">
-          <motion.div key={`${idx}-${donorType}`}
-            initial={{ opacity: 0, y: 20, scale: 0.97 }}
+          <motion.div
+            key={`${idx}-${donorType}`}
+            initial={{ opacity: 0, y: 12, scale: 0.99 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -20, scale: 0.97 }}
-            transition={{ duration: 0.35, ease: "easeOut" }}
-            className={`${style.bg} border-2 ${style.border} rounded-3xl p-5 md:p-12 flex flex-col md:flex-row items-center gap-5 md:gap-8`}
+            exit={{ opacity: 0, y: -12, scale: 0.99 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+            className={`relative overflow-hidden ${style.bg} border ${style.border} rounded-[32px] p-6 sm:p-10 shadow-sm`}
           >
-            <div className={`shrink-0 w-24 h-24 rounded-2xl bg-gradient-to-br ${style.gradient} flex items-center justify-center shadow-xl`}>
-              <Icon size={44} className="text-white" />
-            </div>
-            <div className="flex-1 text-center md:text-left">
-              <div className="text-sm font-bold text-muted-foreground uppercase tracking-widest mb-2">
-                {btnLabel} goes to
+            <div className="flex flex-col md:flex-row items-center md:items-center gap-6 md:gap-8">
+              {/* Left Squircle Icon */}
+              <div className={`shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br ${style.gradient} flex items-center justify-center shadow-md transform transition-transform hover:scale-105`}>
+                <Icon className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
               </div>
-              <h3 className="text-2xl md:text-3xl font-serif font-medium text-foreground mb-3">{prog.name}</h3>
-              <p className="text-muted-foreground leading-relaxed text-base">{prog.desc}</p>
+
+              {/* Middle Card Content */}
+              <div className="flex-1 text-center md:text-left space-y-1.5">
+                <span className="text-[11px] sm:text-xs font-extrabold uppercase tracking-widest text-muted-foreground block">
+                  {currentPriceLabel} GIVES YOU
+                </span>
+
+                <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground tracking-tight">
+                  {prog.name}
+                </h3>
+
+                <p className="text-muted-foreground text-xs sm:text-base leading-relaxed max-w-xl">
+                  {prog.desc}
+                </p>
+              </div>
+
+              {/* Right CTA Button */}
+              <div className="w-full md:w-auto shrink-0 pt-2 md:pt-0 self-center">
+                <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
+                  <Button
+                    asChild
+                    size="lg"
+                    className={`w-full md:w-auto rounded-full h-11 sm:h-13 px-6 sm:px-8 text-xs sm:text-sm font-bold gap-2 bg-gradient-to-r ${style.gradient} border-0 text-white shadow-md hover:opacity-95 transition-all`}
+                  >
+                    <Link href="/donate">
+                      <span>Donate {currentPriceLabel}</span>
+                      <ArrowRight size={16} />
+                    </Link>
+                  </Button>
+                </motion.div>
+              </div>
             </div>
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }} className="w-full md:w-auto shrink-0">
-              <Button asChild size="lg" className={`rounded-full h-13 px-8 font-bold gap-2 bg-gradient-to-r ${style.gradient} border-0 text-white shadow-lg w-full md:w-auto`}>
-                <Link href="/donate">Donate {btnLabel} <ArrowRight size={18} /></Link>
-              </Button>
-            </motion.div>
           </motion.div>
         </AnimatePresence>
 
-        <motion.p
-          initial={{ opacity: 0 }} whileInView={{ opacity: 1 }}
-          viewport={{ once: true }} transition={{ delay: 0.3 }}
-          className="text-center text-xs text-muted-foreground mt-6"
+        {/* Footer Note */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.2 }}
+          className="text-center text-xs text-muted-foreground mt-6 font-medium"
         >
-          {note}
-        </motion.p>
+          <p>{note}</p>
+        </motion.div>
       </div>
     </section>
   );

@@ -20,6 +20,8 @@ interface DonatePageConfig {
   fcraEnabled?: boolean; geoAutoSwitch?: boolean;
   upiApps?: Record<string, unknown>;
   programs?: Array<{ icon: string; name: string; desc: string; inr: number[]; usd: number[] }>;
+  programsIndia?: Array<{ icon: string; name: string; desc: string; inr: number[] }>;
+  programsIntl?: Array<{ icon: string; name: string; desc: string; usd: number[] }>;
 }
 interface FloatingMenuConfig { enabled?: boolean; timerSeconds?: number; }
 interface MusicTrack { title: string; artist?: string; url: string; }
@@ -118,7 +120,7 @@ export interface SiteSettings {
   upiId?: string; upiName?: string; upiQrUrl?: string;
   razorpayLink?: string; paypalLink?: string; stripeLink?: string; cashfreeLink?: string;
   showRazorpay?: boolean; showCashfree?: boolean; showPaypal?: boolean; showStripe?: boolean;
-  bankAccountName?: string; bankAccountNumber?: string; bankIfsc?: string; bankName?: string; bankBranch?: string;
+  bankAccountName?: string; bankAccountNumber?: string; bankIfsc?: string; bankName?: string; bankBranch?: string; swiftCode?: string;
   whatsappGroupLink?: string; whatsappGroupName?: string;
   floating_menu?: FloatingMenuConfig;
   contentProtection?: boolean;

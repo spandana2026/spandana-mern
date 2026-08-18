@@ -31,12 +31,40 @@ export default function DonateTab({ settings, updateSettings, setSettings, token
   return (
 
             <div className="max-w-3xl mx-auto">
-              <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center justify-between mb-6">
                 <div>
                   <h2 className="text-2xl font-serif font-bold">Donate Page</h2>
                   <p className="text-sm text-muted-foreground mt-1">Manage the <a href="/donate" target="_blank" className="underline text-primary">/donate</a> page content and payment details</p>
                 </div>
                 <Button className="rounded-full gap-2" onClick={onSave} disabled={saving}>{saving ? <><Loader2 size={14} className="animate-spin" />Saving…</> : <><Save size={14} />Save Changes</>}</Button>
+              </div>
+
+              {/* Admin Direct Preview Links Bar */}
+              <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/40 dark:to-indigo-950/40 border border-blue-200 dark:border-blue-800 rounded-2xl mb-6 shadow-sm">
+                <div>
+                  <p className="text-xs font-bold text-blue-900 dark:text-blue-200">🔗 Admin Direct Preview Links</p>
+                  <p className="text-[11px] text-blue-700/80 dark:text-blue-300/80 mt-0.5">Click below to open and inspect either version directly in a new browser tab.</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <a
+                    href="/donate?type=indian"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-border text-xs font-bold text-foreground hover:bg-muted transition-colors shadow-sm"
+                  >
+                    <span>🇮🇳 Preview India Form</span>
+                    <ExternalLink size={12} />
+                  </a>
+                  <a
+                    href="/donate?type=intl"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-primary text-white text-xs font-bold hover:bg-primary/90 transition-colors shadow-sm"
+                  >
+                    <span>🌍 Preview International Form</span>
+                    <ExternalLink size={12} />
+                  </a>
+                </div>
               </div>
               <SectionCard title="Page Header">
                 <DeviceTabs>
@@ -139,17 +167,18 @@ export default function DonateTab({ settings, updateSettings, setSettings, token
               <SectionCard title="Bank Transfer" defaultOpen={false}>
                 <Field label="Account Name"><Input value={settings.bankAccountName ?? ""} onChange={(e) => updateSettings(["bankAccountName"], e.target.value)} placeholder="Spandana Care Aid Foundation" /></Field>
                 <Field label="Account Number"><Input value={settings.bankAccountNumber ?? ""} onChange={(e) => updateSettings(["bankAccountNumber"], e.target.value)} placeholder="XXXXXXXXXXXXXXXXXX" /></Field>
-                <Field label="IFSC Code"><Input value={settings.bankIfsc ?? ""} onChange={(e) => updateSettings(["bankIfsc"], e.target.value)} placeholder="SBIN0001234" /></Field>
+                <Field label="IFSC Code (Indian Bank)"><Input value={settings.bankIfsc ?? ""} onChange={(e) => updateSettings(["bankIfsc"], e.target.value)} placeholder="SBIN0001234" /></Field>
+                <Field label="SWIFT / BIC Code (International Wire)"><Input value={settings.swiftCode ?? ""} onChange={(e) => updateSettings(["swiftCode"], e.target.value)} placeholder="SBININBBXXX" /></Field>
                 <Field label="Bank Name"><Input value={settings.bankName ?? ""} onChange={(e) => updateSettings(["bankName"], e.target.value)} placeholder="State Bank of India" /></Field>
                 <Field label="Branch"><Input value={settings.bankBranch ?? ""} onChange={(e) => updateSettings(["bankBranch"], e.target.value)} placeholder="Hyderabad Main Branch" /></Field>
               </SectionCard>
-              <SectionCard title="Online Payment Links" defaultOpen={false}>
-                <p className="text-[11px] text-muted-foreground -mt-1 mb-3">Toggle each method on to show it on the donate page. Save the link even if the toggle is off — it won't appear until you enable it.</p>
+              <SectionCard title="Online Payment Links (International & India)" defaultOpen={false}>
+                <p className="text-[11px] text-muted-foreground -mt-1 mb-3">Enable payment methods below to configure online donation options on the International and Indian donate page. Save the link and toggle ON.</p>
                 {[
+                  { key: "PayPal",    showKey: "showPaypal",    linkKey: "paypalLink",    ph: "https://paypal.me/...",                       desc: "🌍 International & NRI donors (USD / EUR / GBP)" },
+                  { key: "Stripe",    showKey: "showStripe",    linkKey: "stripeLink",    ph: "https://buy.stripe.com/...",                  desc: "🌍 International donors · Credit / Debit cards worldwide" },
                   { key: "Razorpay",  showKey: "showRazorpay",  linkKey: "razorpayLink",  ph: "https://razorpay.me/...",                    desc: "🇮🇳 Indian cards · Net banking · UPI · Wallets · International" },
                   { key: "Cashfree",  showKey: "showCashfree",  linkKey: "cashfreeLink",  ph: "https://payments.cashfree.com/forms/...",    desc: "🇮🇳 Indian & international · Cards · UPI · Net banking" },
-                  { key: "PayPal",    showKey: "showPaypal",    linkKey: "paypalLink",    ph: "https://paypal.me/...",                       desc: "🌍 International & NRI donors" },
-                  { key: "Stripe",    showKey: "showStripe",    linkKey: "stripeLink",    ph: "https://buy.stripe.com/...",                  desc: "🌍 International donors · USD / EUR / GBP" },
                 ].map(({ key, showKey, linkKey, ph, desc }) => (
                   <div key={key} className="mb-3 rounded-xl border border-border bg-muted/20 overflow-hidden">
                     <div className="flex items-center gap-3 px-3 py-2.5">
@@ -158,7 +187,7 @@ export default function DonateTab({ settings, updateSettings, setSettings, token
                         <p className="text-sm font-medium leading-none">{key}</p>
                         <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{desc}</p>
                       </div>
-                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${settings[showKey as keyof SiteSettings] ? "bg-green-100 text-green-700" : "bg-muted text-muted-foreground"}`}>
+                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${settings[showKey as keyof SiteSettings] ? "bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300" : "bg-muted text-muted-foreground"}`}>
                         {settings[showKey as keyof SiteSettings] ? "ON" : "OFF"}
                       </span>
                     </div>
@@ -171,75 +200,196 @@ export default function DonateTab({ settings, updateSettings, setSettings, token
 
               <SectionCard title="💳 Programs & Pricing" defaultOpen={false}>
                 <p className="text-xs text-muted-foreground -mt-1 mb-4">
-                  Five giving programs shown on the donate page. Each program has 3 INR tiers (Indian donors) and 3 USD tiers (international / NRI donors). USD amounts auto-convert to AUD, GBP, AED etc. using live rates.
+                  Independently manage giving programs, descriptions, and pricing tiers for Indian donors and International / NRI donors.
                 </p>
                 {(() => {
-                  const DEFAULT_P = [
-                    { icon: "🏥", name: "Medical Consultation",             desc: "Covers a complete primary checkup, diagnostic tests, medicines, and transport for one patient.",                       inr: [1500,1500,1500], usd: [18, 18, 18] },
-                    { icon: "📚", name: "Education & Child Empowerment",    desc: "Funds monthly tuition, remedial classes, and after-school academic support for one child.",                            inr: [2000,2000,2000], usd: [24, 24, 24] },
-                    { icon: "⚖️", name: "Mental Health & Legal Advocacy",   desc: "Sponsoring professional counseling, vital legal aid for vulnerable women facing violence, and support groups.",         inr: [2500,2500,2500], usd: [30, 30, 30] },
-                    { icon: "👵", name: "Elderly Care & Single Parents",    desc: "Covers medical care, nutrition, and everyday essentials for isolated seniors and single parents.",                      inr: [3000,3000,3000], usd: [36, 36, 36] },
-                    { icon: "🍲", name: "Community Nutrition & Food Relief",desc: "Funds wholesome hot meals and monthly dry ration kits for families in brick kilns and ragpicker communities.",           inr: [5000,5000,5000], usd: [60, 60, 60] },
+                  const [programDonorTab, setProgramDonorTab] = useState<"india" | "intl">("india");
+
+                  const DEFAULT_P_INDIA = [
+                    { icon: "🏥", name: "Medical Consultation",             desc: "Covers a complete primary checkup, diagnostic tests, medicines, and transport for one patient.",                       inr: [1500,1500,1500] },
+                    { icon: "📚", name: "Education & Child Empowerment",    desc: "Funds monthly tuition, remedial classes, and after-school academic support for one child.",                            inr: [2000,2000,2000] },
+                    { icon: "⚖️", name: "Mental Health & Legal Advocacy",   desc: "Sponsoring professional counseling, vital legal aid for vulnerable women facing violence, and support groups.",         inr: [2500,2500,2500] },
+                    { icon: "👵", name: "Elderly Care & Single Parents",    desc: "Covers medical care, nutrition, and everyday essentials for isolated seniors and single parents.",                      inr: [3000,3000,3000] },
+                    { icon: "🍲", name: "Community Nutrition & Food Relief",desc: "Funds wholesome hot meals and monthly dry ration kits for families in brick kilns and ragpicker communities.",           inr: [5000,5000,5000] },
                   ];
-                  const progs: Array<{ icon: string; name: string; desc: string; inr: number[]; usd: number[] }> =
-                    (settings.donatePage?.programs ?? DEFAULT_P) as Array<{ icon: string; name: string; desc: string; inr: number[]; usd: number[] }>;
-                  const setProgs = (arr: typeof progs) => updateSettings(["donatePage", "programs"], arr);
-                  const upd = (pi: number, key: string, val: string) => {
-                    const arr = JSON.parse(JSON.stringify(progs));
-                    arr[pi] = { ...arr[pi], [key]: val };
-                    setProgs(arr);
+
+                  const DEFAULT_P_INTL = [
+                    { icon: "🏥", name: "Medical Consultation",             desc: "Covers a complete primary checkup, diagnostic tests, medicines, and transport for one patient.",                       usd: [18, 18, 18] },
+                    { icon: "📚", name: "Education & Child Empowerment",    desc: "Funds monthly tuition, remedial classes, and after-school academic support for one child.",                            usd: [24, 24, 24] },
+                    { icon: "⚖️", name: "Mental Health & Legal Advocacy",   desc: "Sponsoring professional counseling, vital legal aid for vulnerable women facing violence, and support groups.",         usd: [30, 30, 30] },
+                    { icon: "👵", name: "Elderly Care & Single Parents",    desc: "Covers medical care, nutrition, and everyday essentials for isolated seniors and single parents.",                      usd: [36, 36, 36] },
+                    { icon: "🍲", name: "Community Nutrition & Food Relief",desc: "Funds wholesome hot meals and monthly dry ration kits for families in brick kilns and ragpicker communities.",           usd: [60, 60, 60] },
+                  ];
+
+                  const legacyProgs = (settings.donatePage?.programs ?? []) as Array<{ icon: string; name: string; desc: string; inr: number[]; usd: number[] }>;
+
+                  const progsIndia = (settings.donatePage?.programsIndia ?? (legacyProgs.length ? legacyProgs.map(p => ({ icon: p.icon, name: p.name, desc: p.desc, inr: p.inr ?? [0,0,0] })) : DEFAULT_P_INDIA)) as Array<{ icon: string; name: string; desc: string; inr: number[] }>;
+
+                  const progsIntl = (settings.donatePage?.programsIntl ?? (legacyProgs.length ? legacyProgs.map(p => ({ icon: p.icon, name: p.name, desc: p.desc, usd: p.usd ?? [0,0,0] })) : DEFAULT_P_INTL)) as Array<{ icon: string; name: string; desc: string; usd: number[] }>;
+
+                  const saveIndiaProgs = (arr: typeof progsIndia) => {
+                    updateSettings(["donatePage", "programsIndia"], arr);
+                    const merged = arr.map((p, i) => ({
+                      icon: p.icon,
+                      name: p.name,
+                      desc: p.desc,
+                      inr: p.inr,
+                      usd: progsIntl[i]?.usd ?? [0,0,0],
+                    }));
+                    updateSettings(["donatePage", "programs"], merged);
                   };
-                  const updTier = (pi: number, type: "inr" | "usd", ti: number, val: number) => {
-                    const arr = JSON.parse(JSON.stringify(progs));
-                    const tiers = [...(arr[pi][type] ?? [0, 0, 0])];
-                    tiers[ti] = val;
-                    arr[pi] = { ...arr[pi], [type]: tiers };
-                    setProgs(arr);
+
+                  const saveIntlProgs = (arr: typeof progsIntl) => {
+                    updateSettings(["donatePage", "programsIntl"], arr);
+                    const merged = arr.map((p, i) => ({
+                      icon: progsIndia[i]?.icon ?? p.icon,
+                      name: progsIndia[i]?.name ?? p.name,
+                      desc: progsIndia[i]?.desc ?? p.desc,
+                      inr: progsIndia[i]?.inr ?? [0,0,0],
+                      usd: p.usd,
+                    }));
+                    updateSettings(["donatePage", "programs"], merged);
                   };
+
                   return (
                     <div className="space-y-4">
-                      {progs.map((p, pi) => (
-                        <div key={pi} className="border border-border rounded-2xl p-4 space-y-3">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="text-lg">{p.icon}</span>
-                            <span className="font-semibold text-sm text-foreground">{p.name}</span>
-                            <span className="ml-auto text-[10px] text-muted-foreground bg-muted rounded-full px-2 py-0.5">Program {pi + 1}</span>
+                      {/* Option Selector Tabs */}
+                      <div className="flex border border-border rounded-xl p-1 bg-muted/40 gap-1.5 mb-4">
+                        <button
+                          type="button"
+                          onClick={() => setProgramDonorTab("india")}
+                          className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+                            programDonorTab === "india"
+                              ? "bg-primary text-white shadow-sm"
+                              : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                          }`}
+                        >
+                          <span>🇮🇳 India Donors</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setProgramDonorTab("intl")}
+                          className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+                            programDonorTab === "intl"
+                              ? "bg-primary text-white shadow-sm"
+                              : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                          }`}
+                        >
+                          <span>🌍 International / NRI</span>
+                        </button>
+                      </div>
+
+                      {programDonorTab === "india" ? (
+                        <div className="space-y-4">
+                          <div className="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl px-3 py-2 text-xs text-emerald-800 dark:text-emerald-300 font-semibold">
+                            🇮🇳 Managing Programs & INR Tiers for India Donors
                           </div>
-                          <div className="grid grid-cols-2 gap-2">
-                            <Field label="Icon (emoji)">
-                              <Input value={p.icon} onChange={e => upd(pi, "icon", e.target.value)} placeholder="🌱" className="font-mono" />
-                            </Field>
-                            <Field label="Program Name">
-                              <Input value={p.name} onChange={e => upd(pi, "name", e.target.value)} placeholder="Plant a Tree" />
-                            </Field>
-                          </div>
-                          <Field label="Short Description">
-                            <Input value={p.desc ?? ""} onChange={e => upd(pi, "desc", e.target.value)} placeholder="Native tree planted in your name" />
-                          </Field>
-                          <div>
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">🇮🇳 INR Tiers (Indian Donors)</p>
-                            <div className="grid grid-cols-3 gap-2">
-                              {(["Low (₹)", "Mid (₹)", "High (₹)"] as const).map((lbl, ti) => (
-                                <Field key={ti} label={lbl}>
-                                  <Input type="number" min="0" value={(p.inr ?? [0, 0, 0])[ti] ?? 0}
-                                    onChange={e => updTier(pi, "inr", ti, Number(e.target.value))} />
+                          {progsIndia.map((p, pi) => (
+                            <div key={pi} className="border border-border rounded-2xl p-4 space-y-3 bg-card">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="text-lg">{p.icon}</span>
+                                <span className="font-semibold text-sm text-foreground">{p.name}</span>
+                                <span className="ml-auto text-[10px] text-muted-foreground bg-muted rounded-full px-2 py-0.5">Program {pi + 1}</span>
+                              </div>
+                              <div className="grid grid-cols-2 gap-2">
+                                <Field label="Icon (emoji)">
+                                  <Input value={p.icon} onChange={e => {
+                                    const arr = JSON.parse(JSON.stringify(progsIndia));
+                                    arr[pi].icon = e.target.value;
+                                    saveIndiaProgs(arr);
+                                  }} placeholder="🏥" className="font-mono" />
                                 </Field>
-                              ))}
-                            </div>
-                          </div>
-                          <div>
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">🌍 USD Tiers (International / NRI)</p>
-                            <div className="grid grid-cols-3 gap-2">
-                              {(["Low ($)", "Mid ($)", "High ($)"] as const).map((lbl, ti) => (
-                                <Field key={ti} label={lbl}>
-                                  <Input type="number" min="0" value={(p.usd ?? [0, 0, 0])[ti] ?? 0}
-                                    onChange={e => updTier(pi, "usd", ti, Number(e.target.value))} />
+                                <Field label="Program Name (India)">
+                                  <Input value={p.name} onChange={e => {
+                                    const arr = JSON.parse(JSON.stringify(progsIndia));
+                                    arr[pi].name = e.target.value;
+                                    saveIndiaProgs(arr);
+                                  }} placeholder="Medical Consultation" />
                                 </Field>
-                              ))}
+                              </div>
+                              <Field label="Short Description (India)">
+                                <Input value={p.desc ?? ""} onChange={e => {
+                                  const arr = JSON.parse(JSON.stringify(progsIndia));
+                                  arr[pi].desc = e.target.value;
+                                  saveIndiaProgs(arr);
+                                }} placeholder="Covers a complete primary checkup..." />
+                              </Field>
+                              <div>
+                                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">🇮🇳 INR Tiers (Indian Donors)</p>
+                                <div className="grid grid-cols-3 gap-2">
+                                  {(["Low (₹)", "Mid (₹)", "High (₹)"] as const).map((lbl, ti) => (
+                                    <Field key={ti} label={lbl}>
+                                      <Input type="number" min="0" value={(p.inr ?? [0, 0, 0])[ti] ?? 0}
+                                        onChange={e => {
+                                          const arr = JSON.parse(JSON.stringify(progsIndia));
+                                          const tiers = [...(arr[pi].inr ?? [0, 0, 0])];
+                                          tiers[ti] = Number(e.target.value);
+                                          arr[pi].inr = tiers;
+                                          saveIndiaProgs(arr);
+                                        }} />
+                                    </Field>
+                                  ))}
+                                </div>
+                              </div>
                             </div>
-                          </div>
+                          ))}
                         </div>
-                      ))}
+                      ) : (
+                        <div className="space-y-4">
+                          <div className="bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-xl px-3 py-2 text-xs text-blue-800 dark:text-blue-300 font-semibold">
+                            🌍 Managing Programs & USD Tiers for International / NRI Donors
+                          </div>
+                          {progsIntl.map((p, pi) => (
+                            <div key={pi} className="border border-border rounded-2xl p-4 space-y-3 bg-card">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="text-lg">{p.icon}</span>
+                                <span className="font-semibold text-sm text-foreground">{p.name}</span>
+                                <span className="ml-auto text-[10px] text-muted-foreground bg-muted rounded-full px-2 py-0.5">Program {pi + 1}</span>
+                              </div>
+                              <div className="grid grid-cols-2 gap-2">
+                                <Field label="Icon (emoji)">
+                                  <Input value={p.icon} onChange={e => {
+                                    const arr = JSON.parse(JSON.stringify(progsIntl));
+                                    arr[pi].icon = e.target.value;
+                                    saveIntlProgs(arr);
+                                  }} placeholder="🏥" className="font-mono" />
+                                </Field>
+                                <Field label="Program Name (International)">
+                                  <Input value={p.name} onChange={e => {
+                                    const arr = JSON.parse(JSON.stringify(progsIntl));
+                                    arr[pi].name = e.target.value;
+                                    saveIntlProgs(arr);
+                                  }} placeholder="Medical Consultation" />
+                                </Field>
+                              </div>
+                              <Field label="Short Description (International)">
+                                <Input value={p.desc ?? ""} onChange={e => {
+                                  const arr = JSON.parse(JSON.stringify(progsIntl));
+                                  arr[pi].desc = e.target.value;
+                                  saveIntlProgs(arr);
+                                }} placeholder="Covers a complete primary checkup..." />
+                              </Field>
+                              <div>
+                                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">🌍 USD Tiers (International / NRI)</p>
+                                <div className="grid grid-cols-3 gap-2">
+                                  {(["Low ($)", "Mid ($)", "High ($)"] as const).map((lbl, ti) => (
+                                    <Field key={ti} label={lbl}>
+                                      <Input type="number" min="0" value={(p.usd ?? [0, 0, 0])[ti] ?? 0}
+                                        onChange={e => {
+                                          const arr = JSON.parse(JSON.stringify(progsIntl));
+                                          const tiers = [...(arr[pi].usd ?? [0, 0, 0])];
+                                          tiers[ti] = Number(e.target.value);
+                                          arr[pi].usd = tiers;
+                                          saveIntlProgs(arr);
+                                        }} />
+                                    </Field>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   );
                 })()}

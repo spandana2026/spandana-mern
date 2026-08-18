@@ -146,14 +146,6 @@ export default function MobileMenu({
                 </Link>
               </Button>
             )}
-            {pageVisibility.pageFunZone !== false && (
-              <Button asChild className="w-full rounded-full gap-1.5">
-                <Link href="/fun-zone" onClick={onClose}>
-                  <Gamepad2 size={14} />
-                  Joy Zone
-                </Link>
-              </Button>
-            )}
             {showShop && (
               <Button asChild className="w-full rounded-full gap-1.5">
                 {shopUrl ? (

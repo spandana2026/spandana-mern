@@ -161,7 +161,7 @@ export default function Nav() {
               window.scrollTo({ top: 0, behavior: "smooth" });
             }
           }}
-          className={`flex items-center shrink-0 w-[90px] h-11 sm:w-[140px] sm:h-16 md:w-[190px] md:h-20 opacity-90 hover:opacity-100 transition-opacity cursor-pointer ${logoPosition === "center" ? "absolute left-1/2 -translate-x-1/2" : ""} ${logoPosition === "right" ? "justify-end" : "justify-start"}`}
+          className={`flex items-center shrink-0 w-[100px] xs:w-[115px] sm:w-[135px] md:w-[190px] h-11 xs:h-13 sm:h-16 md:h-20 opacity-95 hover:opacity-100 transition-opacity cursor-pointer ${logoPosition === "center" ? "absolute left-1/2 -translate-x-1/2" : ""} ${logoPosition === "right" ? "justify-end" : "justify-start"}`}
         >
           <img
             src={logoUrl}
@@ -308,62 +308,62 @@ export default function Nav() {
         )}
       </div>
 
-      {/* ── Mobile CTAs ── */}
-      <div className="md:hidden flex items-center gap-1.5 xs:gap-2.5 ml-auto mr-2 overflow-hidden">
+      {/* ── Mobile Header Layout: Explicit margins between logos & text labels ── */}
+      <div className="md:hidden flex items-center justify-between gap-1 xs:gap-1.5 flex-1 ml-1 sm:ml-3">
         {/* LIVE button — mobile */}
         {liveSettings.enabled && (
           <Link
             href="/live"
-            className="flex flex-col items-center justify-center gap-0.5 shrink-0"
+            className="flex flex-col items-center justify-center gap-0.5 shrink-0 px-1"
             aria-label="Watch Live"
           >
-            <span className="flex items-center gap-1 bg-red-500 text-white text-[9px] font-bold px-2 py-1 rounded-full animate-pulse shadow-sm">
-              <Radio size={9} />
+            <span className="flex items-center gap-1 bg-red-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full animate-pulse shadow-sm">
+              <Radio size={10} />
               LIVE
             </span>
           </Link>
         )}
-        <Link href="/" className="flex flex-col items-center justify-center gap-0.5 shrink-0 text-primary hover:text-primary/80 transition-colors" aria-label="Home">
-          <Home size={22} strokeWidth={2} />
-          <span className="text-[10px] font-bold tracking-wide leading-none whitespace-nowrap">Home</span>
+        <Link href="/" className="flex flex-col items-center justify-center gap-0.5 shrink-0 text-primary hover:text-primary/80 transition-colors px-1" aria-label="Home">
+          <Home size={30} strokeWidth={2.2} />
+          <span className="text-[10px] xs:text-[11px] font-bold tracking-tight leading-none whitespace-nowrap">Home</span>
         </Link>
         {showDonate && (
-        <Link href="/donate" className="flex flex-col items-center justify-center gap-0.5 shrink-0 text-primary hover:text-primary/80 transition-colors" aria-label={donateLabel}>
-          <Heart size={22} strokeWidth={2} />
-          <span className="text-[10px] font-bold tracking-wide leading-none whitespace-nowrap">{donateLabel}</span>
+        <Link href="/donate" className="flex flex-col items-center justify-center gap-0.5 shrink-0 text-primary hover:text-primary/80 transition-colors px-1" aria-label={donateLabel}>
+          <Heart size={30} strokeWidth={2.2} />
+          <span className="text-[10px] xs:text-[11px] font-bold tracking-tight leading-none whitespace-nowrap">{donateLabel}</span>
         </Link>
         )}
         {showGetInvolved && (
-        <Link href="/join-us" className="flex flex-col items-center justify-center gap-0.5 shrink-0 text-primary hover:text-primary/80 transition-colors" aria-label={getInvolvedLabel}>
-          <HeartHandshake size={22} strokeWidth={2} />
-          <span className="text-[10px] font-bold tracking-wide leading-none whitespace-nowrap">{getInvolvedLabel}</span>
+        <Link href="/join-us" className="flex flex-col items-center justify-center gap-0.5 shrink-0 text-primary hover:text-primary/80 transition-colors px-1" aria-label={getInvolvedLabel}>
+          <HeartHandshake size={30} strokeWidth={2.2} />
+          <span className="text-[10px] xs:text-[11px] font-bold tracking-tight leading-none whitespace-nowrap">Join Us</span>
         </Link>
         )}
         {showShop && (shopUrl ? (
-          <a href={shopUrl} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center justify-center gap-0.5 shrink-0 text-primary hover:text-primary/80 transition-colors" aria-label={shopLabel}>
-            <ShoppingBag size={22} strokeWidth={2} />
-            <span className="text-[10px] font-bold tracking-wide leading-none whitespace-nowrap">{shopLabel}</span>
+          <a href={shopUrl} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center justify-center gap-0.5 shrink-0 text-primary hover:text-primary/80 transition-colors px-1" aria-label={shopLabel}>
+            <ShoppingBag size={30} strokeWidth={2.2} />
+            <span className="text-[10px] xs:text-[11px] font-bold tracking-tight leading-none whitespace-nowrap">{shopLabel}</span>
           </a>
         ) : (
-          <Link href="https://neenasgifts.store/" className="flex flex-col items-center justify-center gap-0.5 shrink-0 text-primary hover:text-primary/80 transition-colors" aria-label={shopLabel}>
-            <ShoppingBag size={22} strokeWidth={2} />
-            <span className="text-[10px] font-bold tracking-wide leading-none whitespace-nowrap">{shopLabel}</span>
+          <Link href="/shop" className="flex flex-col items-center justify-center gap-0.5 shrink-0 text-primary hover:text-primary/80 transition-colors px-1" aria-label={shopLabel}>
+            <ShoppingBag size={30} strokeWidth={2.2} />
+            <span className="text-[10px] xs:text-[11px] font-bold tracking-tight leading-none whitespace-nowrap">{shopLabel}</span>
           </Link>
         ))}
-      </div>
 
-      {/* ── Mobile hamburger ── */}
-      <button
-        className="md:hidden shrink-0 flex items-center justify-center w-9 h-9 rounded-full bg-primary text-white shadow-sm hover:bg-primary/90 transition-colors ml-1.5"
-        onClick={() => {
-          const next = !open;
-          setOpen(next);
-          if (next) window.dispatchEvent(new CustomEvent("main-menu-open"));
-        }}
-        aria-label="Toggle menu"
-      >
-        {open ? <X size={18} /> : <Menu size={18} />}
-      </button>
+        {/* ── Mobile hamburger: Transparent background & Black icon ── */}
+        <button
+          className="shrink-0 flex items-center justify-center w-9 h-9 rounded-full bg-transparent text-black dark:text-white hover:bg-black/5 transition-colors p-1 ml-0.5"
+          onClick={() => {
+            const next = !open;
+            setOpen(next);
+            if (next) window.dispatchEvent(new CustomEvent("main-menu-open"));
+          }}
+          aria-label="Toggle menu"
+        >
+          {open ? <X size={26} strokeWidth={2.2} /> : <Menu size={24} strokeWidth={2.2} />}
+        </button>
+      </div>
 
       </div>{/* end Row 1 */}
 
@@ -470,12 +470,6 @@ export default function Nav() {
                 <Link href="/join-us" onClick={() => setOpen(false)}>
                   <HeartHandshake size={14} />
                   {getInvolvedLabel}
-                </Link>
-              </Button>
-              <Button asChild className="w-full rounded-full gap-1.5">
-                <Link href="/fun-zone" onClick={() => setOpen(false)}>
-                  <Gamepad2 size={14} />
-                  Joy Zone
                 </Link>
               </Button>
               <Button asChild className="w-full rounded-full gap-1.5">
